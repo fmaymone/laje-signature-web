@@ -51,3 +51,16 @@ src/
 
 - API: [laje-signature-api](https://github.com/fmaymone/laje-signature-api)
 - Biblioteca / motor: [laje-signature](https://github.com/fmaymone/laje-signature)
+
+## Vercel
+
+Deploy contínuo a partir de `main` no GitHub.
+
+```sh
+# CLI (primeira vez)
+npx vercel link
+npx vercel --prod
+```
+
+Config em `vercel.json` (Vite → `dist`, SPA rewrites).  
+Variáveis públicas: copie de `.env.example` para o painel Vercel (`VITE_*`).

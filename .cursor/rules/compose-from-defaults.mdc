@@ -1,0 +1,15 @@
+---
+description: Ao editar TSX, compose features a partir de src/components e sections
+globs: src/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+# UI em arquivos TS/TSX
+
+Ao criar ou alterar telas:
+
+1. Importe de `src/components/...` — não copie markup/CSS de demos para um “novo design system”.
+2. Coloque lógica de domínio / view em `src/sections/<feature>/` como **blocos** que usam os defaults.
+3. Páginas em `src/pages/` só orquestram routes + view; UI vive na section + components.
+4. Ícones: `Iconify`. Imagens: `Image`. Labels/chips de status: `Label`.
+5. Se estiver tentando criar `src/components/<novo-nome>/`, pare e reutilize ou estenda o pacote existente mais próximo.

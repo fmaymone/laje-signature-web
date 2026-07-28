@@ -1,0 +1,61 @@
+---
+description: Sempre reutilizar componentes default de src/components — não inventar UI nova
+alwaysApply: true
+---
+
+# Alicerce de componentes (Laje Signature Web)
+
+`src/components/` é a **única fonte** de UI reutilizável. Novas telas e features devem ser **blocos** (composição) desses defaults — não componentes paralelos.
+
+## Obrigatório
+
+1. Antes de criar qualquer componente, busque em `src/components/` (e MUI já usado pelo kit).
+2. Preferir **compor** (`sections/`, `pages/`, layouts) a **criar** wrappers em `src/components/`.
+3. Só adicione algo em `src/components/` se for genérico, reutilizável em ≥2 fluxos, e não existir equivalente.
+4. Nunca duplicar: Button/Card/Dialog/Table/Form/Upload/Snackbar/Label etc. “do zero”.
+
+## Catálogo (defaults)
+
+`animate`, `carousel`, `chart`, `color-utils`, `country-select`, `custom-breadcrumbs`, `custom-date-range-picker`, `custom-dialog`, `custom-popover`, `custom-tabs`, `editor`, `empty-content`, `file-thumbnail`, `filters-result`, `flag-icon`, `hook-form`, `iconify`, `image`, `label`, `lightbox`, `loading-screen`, `logo`, `map`, `markdown`, `mega-menu`, `nav-basic`, `nav-section`, `number-input`, `organizational-chart`, `phone-input`, `progress-bar`, `scrollbar`, `search-not-found`, `settings`, `snackbar`, `svg-color`, `table`, `upload`, `walktour`
+
++ primitives MUI via tema do projeto (`Button`, `Stack`, `Card`, `Typography`, …).
+
+## Padrão
+
+```tsx
+// ❌ BAD — componente novo que reinvent UI
+export function FancyCard({ title }: { title: string }) {
+  return <div className="fancy">{title}</div>;
+}
+
+// ✅ GOOD — bloco composto dos defaults
+import { Iconify } from 'src/components/iconify';
+import { EmptyContent } from 'src/components/empty-content';
+import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+
+export function RecipeEmptyState() {
+  return (
+    <>
+      <CustomBreadcrumbs heading="Receitas" links={[{ name: 'Dashboard' }]} />
+      <EmptyContent title="Nenhuma receita" description="Compose um prato assinatura." />
+      <Iconify icon="solar:chef-hat-bold" />
+    </>
+  );
+}
+```
+
+## Formulários e feedback
+
+- Forms → `hook-form` (+ fields do kit)
+- Confirmação → `custom-dialog`
+- Toasts → `snackbar`
+- Tabelas → `table`
+- Upload → `upload`
+- Loading → `loading-screen` / `progress-bar`
+- Vazio → `empty-content`
+
+## Se faltar algo
+
+1. Estender um default existente (props / variant / slot).
+2. Compor 2+ defaults em um **bloco de feature** em `sections/`.
+3. Só então, com justificativa explícita, propor um novo pacote em `src/components/`.
