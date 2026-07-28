@@ -31,7 +31,7 @@ export const themeConfig: ThemeConfig = {
   direction: 'ltr',
   defaultMode: 'light',
   modeStorageKey: 'theme-mode',
-  classesPrefix: 'minimal',
+  classesPrefix: 'laje',
   /** **************************************
    * Typography
    *************************************** */
@@ -44,19 +44,19 @@ export const themeConfig: ThemeConfig = {
    *************************************** */
   palette: {
     primary: {
-      lighter: '#C8FAD6',
-      light: '#5BE49B',
-      main: '#00A76F',
-      dark: '#007867',
-      darker: '#004B50',
+      lighter: '#FDE68A',
+      light: '#F59E0B',
+      main: '#B45309',
+      dark: '#92400E',
+      darker: '#78350F',
       contrastText: '#FFFFFF',
     },
     secondary: {
-      lighter: '#EFD6FF',
-      light: '#C684FF',
-      main: '#8E33FF',
-      dark: '#5119B7',
-      darker: '#27097A',
+      lighter: '#E7E5E4',
+      light: '#A8A29E',
+      main: '#1C1917',
+      dark: '#0C0A09',
+      darker: '#000000',
       contrastText: '#FFFFFF',
     },
     info: {

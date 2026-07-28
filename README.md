@@ -63,4 +63,5 @@ npx vercel --prod
 ```
 
 Config em `vercel.json` (Vite → `dist`, SPA rewrites).  
-Variáveis públicas: copie de `.env.example` para o painel Vercel (`VITE_*`).
+Variáveis públicas: copie de `.env.example` para o painel Vercel (`VITE_*`).  
+API de produção: `VITE_SERVER_URL=https://laje-signature-api.onrender.com`

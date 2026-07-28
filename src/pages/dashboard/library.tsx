@@ -2,11 +2,11 @@ import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/global-config';
 
-import { LajeHomeView } from 'src/sections/laje/view';
+import { LajeLibraryView } from 'src/sections/laje/view';
 
 // ----------------------------------------------------------------------
 
-const metadata = { title: `Início - ${CONFIG.appName}` };
+const metadata = { title: `Biblioteca - ${CONFIG.appName}` };
 
 export default function Page() {
   return (
@@ -15,7 +15,7 @@ export default function Page() {
         <title>{metadata.title}</title>
       </Helmet>
 
-      <LajeHomeView />
+      <LajeLibraryView />
     </>
   );
 }
