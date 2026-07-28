@@ -1,8 +1,8 @@
 {
-  "name": "@minimal-kit/vite-ts",
-  "author": "Minimals",
-  "version": "6.3.0",
-  "description": "Vite & TypeScript",
+  "name": "laje-signature-web",
+  "author": "Laje",
+  "version": "0.1.0",
+  "description": "Laje Signature Web — alicerce de componentes UI para o app Laje",
   "private": true,
   "type": "module",
   "scripts": {
