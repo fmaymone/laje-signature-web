@@ -7,8 +7,8 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import { styled, useTheme } from '@mui/material/styles';
 
-import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
 
 import { logoClasses } from './classes';
 
