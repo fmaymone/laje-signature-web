@@ -6,7 +6,7 @@ import { LajeRecipesView } from 'src/sections/laje/view';
 
 // ----------------------------------------------------------------------
 
-const metadata = { title: `Receitas - ${CONFIG.appName}` };
+const metadata = { title: `Compor - ${CONFIG.appName}` };
 
 export default function Page() {
   return (

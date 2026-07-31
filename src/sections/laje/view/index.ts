@@ -1,3 +1,12 @@
 export { LajeHomeView } from './home-view';
 export { LajeRecipesView } from './recipes-view';
 export { LajeLibraryView } from './library-view';
+export { LajeRecipeRecordsView } from './recipe-records-view';
+export { LajeRecipeEditorView } from './recipe-editor-view';
+export { LajeServicesView } from './services-view';
+export { LajeServiceEditorView } from './service-editor-view';
+export { LajeCompositionsView } from './compositions-view';
+export { LajeCompositionEditorView } from './composition-editor-view';
+export { LajeBlocksView } from './blocks-view';
+export { LajeBlockEditorView } from './block-editor-view';
+export { LajeIngredientsView } from './ingredients-view';

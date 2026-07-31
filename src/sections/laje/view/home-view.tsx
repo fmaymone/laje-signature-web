@@ -39,15 +39,15 @@ export function LajeHomeView() {
           </Typography>
         </Box>
 
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <Card sx={{ flex: 1 }}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} flexWrap="wrap" useFlexGap>
+          <Card sx={{ flex: 1, minWidth: 240 }}>
             <CardContent>
-              <Iconify icon="solar:chef-hat-bold-duotone" width={36} sx={{ mb: 1, color: 'primary.main' }} />
+              <Iconify icon="solar:magic-stick-3-bold-duotone" width={36} sx={{ mb: 1, color: 'primary.main' }} />
               <Typography variant="h6" sx={{ mb: 1 }}>
-                Receitas assinatura
+                Compor prato
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Organize e revise pratos compostos pelo motor Laje.
+                Pedido em linguagem natural → blocos de sabor → receita executável.
               </Typography>
               <Button
                 component={RouterLink}
@@ -55,12 +55,32 @@ export function LajeHomeView() {
                 variant="contained"
                 color="primary"
               >
-                Ver receitas
+                Compor agora
               </Button>
             </CardContent>
           </Card>
 
-          <Card sx={{ flex: 1 }}>
+          <Card sx={{ flex: 1, minWidth: 240 }}>
+            <CardContent>
+              <Iconify icon="solar:widget-5-bold-duotone" width={36} sx={{ mb: 1, color: 'primary.main' }} />
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Composições
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Desenhos de blocos com título, posições e ligações salvas.
+              </Typography>
+              <Button
+                component={RouterLink}
+                href={paths.dashboard.compositions}
+                variant="outlined"
+                color="inherit"
+              >
+                Abrir composições
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ flex: 1, minWidth: 240 }}>
             <CardContent>
               <Iconify icon="solar:notebook-bold-duotone" width={36} sx={{ mb: 1, color: 'primary.main' }} />
               <Typography variant="h6" sx={{ mb: 1 }}>
@@ -76,21 +96,6 @@ export function LajeHomeView() {
                 color="inherit"
               >
                 Abrir biblioteca
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card sx={{ flex: 1 }}>
-            <CardContent>
-              <Iconify icon="solar:magic-stick-3-bold-duotone" width={36} sx={{ mb: 1, color: 'primary.main' }} />
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                Compor prato
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Em breve: pedido → blocos → receita executável.
-              </Typography>
-              <Button variant="soft" color="primary" disabled>
-                Em breve
               </Button>
             </CardContent>
           </Card>

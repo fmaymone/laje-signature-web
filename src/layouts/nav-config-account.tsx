@@ -13,8 +13,18 @@ export const _account: AccountDrawerProps['data'] = [
     icon: <Iconify icon="solar:home-angle-bold-duotone" />,
   },
   {
-    label: 'Receitas',
+    label: 'Compor',
     href: paths.dashboard.recipes,
+    icon: <Iconify icon="solar:magic-stick-3-bold-duotone" />,
+  },
+  {
+    label: 'Composições',
+    href: paths.dashboard.compositions,
+    icon: <Iconify icon="solar:widget-5-bold-duotone" />,
+  },
+  {
+    label: 'Blocos',
+    href: paths.dashboard.blocks,
     icon: <Iconify icon="solar:chef-hat-bold-duotone" />,
   },
   {

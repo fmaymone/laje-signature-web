@@ -1,0 +1,14 @@
+---
+description: Após mudanças na API, garantir deploy no Render
+alwaysApply: true
+---
+
+# Deploy Render após mudanças na API
+
+Quando o trabalho tocar **laje-signature-api**, ao finalizar:
+
+1. Commit + push em `main` (se houver mudanças a publicar).
+2. Confirmar auto-deploy no Render (`laje-signature-api`).
+3. Avisar o usuário com status/link do deploy.
+
+Não esperar pedido explícito de deploy da API, salvo se o usuário pedir para não publicar.

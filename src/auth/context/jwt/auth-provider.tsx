@@ -3,40 +3,66 @@ import { useMemo, useEffect, useCallback } from 'react';
 
 import axios, { endpoints } from 'src/lib/axios';
 
-import { JWT_STORAGE_KEY } from './constant';
 import { AuthContext } from '../auth-context';
-import { setSession, isValidToken } from './utils';
+import { setSession, isValidToken, readStoredToken, userFromToken, clearStoredToken } from './utils';
 
 import type { AuthState } from '../../types';
 
 // ----------------------------------------------------------------------
 
-/**
- * NOTE:
- * We only build demo at basic level.
- * Customer will need to do some extra handling yourself if you want to extend the logic and other features...
- */
-
 type Props = {
   children: React.ReactNode;
 };
+
+function isUnauthorized(error: unknown): boolean {
+  if (!error) return false;
+  if (typeof error === 'string') {
+    return /token|autentic|unauthor|401/i.test(error);
+  }
+  if (typeof error !== 'object') return false;
+
+  const status =
+    (error as { status?: number }).status ?? (error as { statusCode?: number }).statusCode;
+  if (status === 401) return true;
+
+  const detail = (error as { detail?: unknown }).detail;
+  if (typeof detail === 'string') {
+    return /token|autentic|unauthor/i.test(detail);
+  }
+
+  return false;
+}
 
 export function AuthProvider({ children }: Props) {
   const { state, setState } = useSetState<AuthState>({ user: null, loading: true });
 
   const checkUserSession = useCallback(async () => {
     try {
-      const accessToken = sessionStorage.getItem(JWT_STORAGE_KEY);
+      const accessToken = readStoredToken();
 
       if (accessToken && isValidToken(accessToken)) {
-        setSession(accessToken);
+        await setSession(accessToken);
 
-        const res = await axios.get(endpoints.auth.me);
+        try {
+          const res = await axios.get(endpoints.auth.me);
+          const { user } = res.data;
+          setState({ user: { ...user, accessToken }, loading: false });
+        } catch (error) {
+          // Rede / cold start da API: mantém sessão se o JWT ainda for válido.
+          if (isUnauthorized(error)) {
+            await setSession(null);
+            setState({ user: null, loading: false });
+            return;
+          }
 
-        const { user } = res.data;
-
-        setState({ user: { ...user, accessToken }, loading: false });
+          console.warn('Auth /me unavailable, keeping JWT session', error);
+          const fallback = userFromToken(accessToken);
+          setState({ user: fallback, loading: false });
+        }
       } else {
+        if (accessToken) {
+          clearStoredToken();
+        }
         setState({ user: null, loading: false });
       }
     } catch (error) {

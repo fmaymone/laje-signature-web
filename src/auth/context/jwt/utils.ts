@@ -6,6 +6,34 @@ import { JWT_STORAGE_KEY } from './constant';
 
 // ----------------------------------------------------------------------
 
+let expiredTimer: ReturnType<typeof setTimeout> | null = null;
+
+function getStorage(): Storage {
+  return localStorage;
+}
+
+/** Migra token antigo de sessionStorage → localStorage (uma vez). */
+export function readStoredToken(): string | null {
+  const fromLocal = localStorage.getItem(JWT_STORAGE_KEY);
+  if (fromLocal) return fromLocal;
+
+  const fromSession = sessionStorage.getItem(JWT_STORAGE_KEY);
+  if (fromSession) {
+    localStorage.setItem(JWT_STORAGE_KEY, fromSession);
+    sessionStorage.removeItem(JWT_STORAGE_KEY);
+    return fromSession;
+  }
+
+  return null;
+}
+
+export function clearStoredToken() {
+  localStorage.removeItem(JWT_STORAGE_KEY);
+  sessionStorage.removeItem(JWT_STORAGE_KEY);
+}
+
+// ----------------------------------------------------------------------
+
 export function jwtDecode(token: string) {
   try {
     if (!token) return null;
@@ -24,6 +52,21 @@ export function jwtDecode(token: string) {
     console.error('Error decoding token:', error);
     throw error;
   }
+}
+
+/** User mínimo a partir do payload JWT (quando /me falha por rede). */
+export function userFromToken(accessToken: string) {
+  const decoded = jwtDecode(accessToken);
+  if (!decoded) return null;
+
+  return {
+    id: String(decoded.sub ?? ''),
+    email: String(decoded.email ?? ''),
+    displayName: String(decoded.displayName ?? decoded.email ?? ''),
+    photoURL: null as string | null,
+    role: String(decoded.role ?? 'staff'),
+    accessToken,
+  };
 }
 
 // ----------------------------------------------------------------------
@@ -55,14 +98,23 @@ export function tokenExpired(exp: number) {
   const currentTime = Date.now();
   const timeLeft = exp * 1000 - currentTime;
 
-  setTimeout(() => {
+  if (expiredTimer) {
+    clearTimeout(expiredTimer);
+    expiredTimer = null;
+  }
+
+  if (timeLeft <= 0) {
+    clearStoredToken();
+    window.location.href = paths.auth.jwt.signIn;
+    return;
+  }
+
+  expiredTimer = setTimeout(() => {
     try {
-      alert('Token expired!');
-      sessionStorage.removeItem(JWT_STORAGE_KEY);
+      clearStoredToken();
       window.location.href = paths.auth.jwt.signIn;
     } catch (error) {
       console.error('Error during token expiration:', error);
-      throw error;
     }
   }, timeLeft);
 }
@@ -72,11 +124,12 @@ export function tokenExpired(exp: number) {
 export async function setSession(accessToken: string | null) {
   try {
     if (accessToken) {
-      sessionStorage.setItem(JWT_STORAGE_KEY, accessToken);
+      getStorage().setItem(JWT_STORAGE_KEY, accessToken);
+      sessionStorage.removeItem(JWT_STORAGE_KEY);
 
       axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
-      const decodedToken = jwtDecode(accessToken); // ~3 days by minimals server
+      const decodedToken = jwtDecode(accessToken);
 
       if (decodedToken && 'exp' in decodedToken) {
         tokenExpired(decodedToken.exp);
@@ -84,8 +137,12 @@ export async function setSession(accessToken: string | null) {
         throw new Error('Invalid access token!');
       }
     } else {
-      sessionStorage.removeItem(JWT_STORAGE_KEY);
+      clearStoredToken();
       delete axios.defaults.headers.common.Authorization;
+      if (expiredTimer) {
+        clearTimeout(expiredTimer);
+        expiredTimer = null;
+      }
     }
   } catch (error) {
     console.error('Error during set session:', error);

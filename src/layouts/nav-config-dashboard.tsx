@@ -16,9 +16,34 @@ export const navData: NavSectionProps['data'] = [
         icon: <Iconify width={24} icon="solar:home-angle-bold-duotone" />,
       },
       {
-        title: 'Receitas',
+        title: 'Compor',
         path: paths.dashboard.recipes,
+        icon: <Iconify width={24} icon="solar:magic-stick-3-bold-duotone" />,
+      },
+      {
+        title: 'Receitas',
+        path: paths.dashboard.recipeRecords,
+        icon: <Iconify width={24} icon="solar:document-text-bold-duotone" />,
+      },
+      {
+        title: 'Serviços',
+        path: paths.dashboard.services,
+        icon: <Iconify width={24} icon="solar:calendar-bold-duotone" />,
+      },
+      {
+        title: 'Composições',
+        path: paths.dashboard.compositions,
+        icon: <Iconify width={24} icon="solar:widget-5-bold-duotone" />,
+      },
+      {
+        title: 'Blocos',
+        path: paths.dashboard.blocks,
         icon: <Iconify width={24} icon="solar:chef-hat-bold-duotone" />,
+      },
+      {
+        title: 'Ingredientes',
+        path: paths.dashboard.ingredients,
+        icon: <Iconify width={24} icon="solar:fridge-bold-duotone" />,
       },
       {
         title: 'Biblioteca',

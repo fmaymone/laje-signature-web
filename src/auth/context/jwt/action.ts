@@ -1,7 +1,6 @@
 import axios, { endpoints } from 'src/lib/axios';
 
 import { setSession } from './utils';
-import { JWT_STORAGE_KEY } from './constant';
 
 // ----------------------------------------------------------------------
 
@@ -32,7 +31,7 @@ export const signInWithPassword = async ({ email, password }: SignInParams): Pro
       throw new Error('Access token not found in response');
     }
 
-    setSession(accessToken);
+    await setSession(accessToken);
   } catch (error) {
     console.error('Error during sign in:', error);
     throw error;
@@ -64,7 +63,7 @@ export const signUp = async ({
       throw new Error('Access token not found in response');
     }
 
-    sessionStorage.setItem(JWT_STORAGE_KEY, accessToken);
+    await setSession(accessToken);
   } catch (error) {
     console.error('Error during sign up:', error);
     throw error;
