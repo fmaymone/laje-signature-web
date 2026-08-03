@@ -35,12 +35,22 @@ export type SearchbarProps = BoxProps & {
 
 const breakpoint: Breakpoint = 'sm';
 
+function isMacPlatform() {
+  if (typeof navigator === 'undefined') return false;
+  // Prefer modern API when available, fall back gracefully
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const uaDataPlatform = (navigator as any).userAgentData?.platform as string | undefined;
+  const platform = uaDataPlatform ?? navigator.platform ?? '';
+  return /mac/i.test(platform);
+}
+
 export function Searchbar({ data: navItems = [], sx, ...other }: SearchbarProps) {
   const theme = useTheme();
   const smUp = useMediaQuery(theme.breakpoints.up(breakpoint));
 
   const { value: open, onFalse: onClose, onTrue: onOpen, onToggle } = useBoolean();
   const [searchQuery, setSearchQuery] = useState('');
+  const [shortcutLabel, setShortcutLabel] = useState('Ctrl K');
 
   const handleClose = useCallback(() => {
     onClose();
@@ -49,7 +59,14 @@ export function Searchbar({ data: navItems = [], sx, ...other }: SearchbarProps)
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (event.metaKey && event.key.toLowerCase() === 'k') {
+      if (event.repeat) return;
+
+      const key = event.key?.toLowerCase();
+      const isMac = isMacPlatform();
+      const cmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
+
+      if (cmdOrCtrl && key === 'k') {
+        event.preventDefault();
         onToggle();
         setSearchQuery('');
       }
@@ -58,6 +75,7 @@ export function Searchbar({ data: navItems = [], sx, ...other }: SearchbarProps)
   );
 
   useEffect(() => {
+    setShortcutLabel(isMacPlatform() ? '⌘K' : 'Ctrl K');
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
@@ -132,7 +150,7 @@ export function Searchbar({ data: navItems = [], sx, ...other }: SearchbarProps)
           display: { xs: 'none', [breakpoint]: 'inline-flex' },
         }}
       >
-        ⌘K
+        {shortcutLabel}
       </Label>
     </Box>
   );
