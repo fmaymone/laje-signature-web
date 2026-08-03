@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { useSearchParams } from 'src/routes/hooks';
+import { useRouter, useSearchParams } from 'src/routes/hooks';
 
 import { CONFIG } from 'src/global-config';
 
@@ -15,6 +15,7 @@ type GuestGuardProps = {
 };
 
 export function GuestGuard({ children }: GuestGuardProps) {
+  const router = useRouter();
   const { loading, authenticated } = useAuthContext();
 
   const searchParams = useSearchParams();
@@ -28,10 +29,8 @@ export function GuestGuard({ children }: GuestGuardProps) {
     }
 
     if (authenticated) {
-      // Redirect authenticated users to the returnTo path
-      // Using `window.location.href` instead of `router.replace` to avoid unnecessary re-rendering
-      // that might be caused by the AuthGuard component
-      window.location.href = returnTo;
+      // Client-side navigate — full page load breaks SPA routes on static hosts (Render 404).
+      router.replace(returnTo);
       return;
     }
 
