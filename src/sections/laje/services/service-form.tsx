@@ -1,23 +1,37 @@
 import type { RecipeRecord } from 'src/types/recipe-record';
 import type { ServiceRecord } from 'src/types/service-record';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Autocomplete from '@mui/material/Autocomplete';
 import CardContent from '@mui/material/CardContent';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { useGetIngredients } from 'src/actions/ingredients';
 import { useGetRecipeRecords } from 'src/actions/recipe-records';
 import { createServiceRecord, updateServiceRecord } from 'src/actions/service-records';
 
+import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
+
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
+
+import {
+  defaultServiceDatetimeLocal,
+  fromDatetimeLocalValue,
+  toDatetimeLocalValue,
+} from './service-aggregate';
+import { ServiceShoppingList } from './service-shopping-list';
+import { ServiceTimeline } from './service-timeline';
 
 // ----------------------------------------------------------------------
 
@@ -30,14 +44,11 @@ function errorMessage(err: unknown) {
   return 'Falha ao salvar serviço';
 }
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 type FormState = {
   name: string;
   notes: string;
-  service_date: string;
+  /** Valor datetime-local (YYYY-MM-DDTHH:mm). */
+  service_date_local: string;
   recipes: RecipeRecord[];
 };
 
@@ -46,7 +57,9 @@ function toForm(service: ServiceRecord | null | undefined, recipes: RecipeRecord
   return {
     name: service?.name ?? '',
     notes: service?.notes ?? '',
-    service_date: service?.service_date ?? todayISO(),
+    service_date_local: service?.service_date
+      ? toDatetimeLocalValue(service.service_date)
+      : defaultServiceDatetimeLocal(),
     recipes: (service?.recipe_ids ?? []).map((id) => byId.get(id)).filter(Boolean) as RecipeRecord[],
   };
 }
@@ -60,8 +73,14 @@ type Props = {
 
 export function ServiceForm({ mode, service, loading, onSaved }: Props) {
   const { recipes } = useGetRecipeRecords();
+  const { ingredients } = useGetIngredients();
   const [form, setForm] = useState<FormState>(() => toForm(service, []));
   const [saving, setSaving] = useState(false);
+
+  const ingredientsById = useMemo(
+    () => new Map(ingredients.map((item) => [item.id, item])),
+    [ingredients]
+  );
 
   useEffect(() => {
     setForm(toForm(service, recipes));
@@ -82,15 +101,15 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
       toast.error('Informe o nome do serviço');
       return;
     }
-    if (!form.service_date) {
-      toast.error('Informe a data do serviço');
+    if (!form.service_date_local) {
+      toast.error('Informe a data e o horário do serviço');
       return;
     }
 
     const payload = {
       name: form.name.trim(),
       notes: form.notes.trim() || null,
-      service_date: form.service_date,
+      service_date: fromDatetimeLocalValue(form.service_date_local),
       recipe_ids: form.recipes.map((r) => r.id),
     };
 
@@ -123,12 +142,15 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
               placeholder="ex.: Almoço degustação"
             />
             <TextField
-              label="Data do serviço"
-              type="date"
+              label="Data e horário do serviço"
+              type="datetime-local"
               fullWidth
-              value={form.service_date}
-              onChange={(e) => setForm((prev) => ({ ...prev, service_date: e.target.value }))}
+              value={form.service_date_local}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, service_date_local: e.target.value }))
+              }
               InputLabelProps={{ shrink: true }}
+              helperText="Horário em que o serviço começa — a timeline conta a antecedência a partir daqui."
             />
             <TextField
               label="Notas"
@@ -171,10 +193,14 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
                     <Chip
                       {...tagProps}
                       key={option.id}
+                      component={RouterLink}
+                      href={paths.dashboard.recipeRecord(option.id)}
+                      clickable
                       label={option.title}
                       size="small"
                       color="primary"
                       variant="soft"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   );
                 })
@@ -187,11 +213,68 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
                 />
               )}
             />
+
+            {form.recipes.length > 0 && (
+              <Stack spacing={0.75}>
+                <Typography variant="caption" color="text.secondary">
+                  Abrir no editor
+                </Typography>
+                {form.recipes.map((recipe) => (
+                  <Stack
+                    key={recipe.id}
+                    direction="row"
+                    alignItems="center"
+                    spacing={1}
+                    sx={{
+                      py: 0.5,
+                      px: 1,
+                      borderRadius: 1,
+                      bgcolor: 'background.neutral',
+                    }}
+                  >
+                    <Link
+                      component={RouterLink}
+                      href={paths.dashboard.recipeRecord(recipe.id)}
+                      variant="subtitle2"
+                      color="inherit"
+                      underline="hover"
+                      sx={{ flex: 1, minWidth: 0 }}
+                      noWrap
+                    >
+                      {recipe.title}
+                    </Link>
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      {recipe.steps?.length ?? 0} passos
+                    </Typography>
+                    <IconButton
+                      component={RouterLink}
+                      href={paths.dashboard.recipeRecord(recipe.id)}
+                      size="small"
+                      aria-label={`Editar ${recipe.title}`}
+                    >
+                      <Iconify icon="solar:pen-bold" width={18} />
+                    </IconButton>
+                  </Stack>
+                ))}
+              </Stack>
+            )}
           </Stack>
         </CardContent>
       </Card>
 
-      <Stack direction="row" justifyContent="flex-end">
+      <Stack direction="row" justifyContent="flex-end" spacing={1.5} flexWrap="wrap" useFlexGap>
+        {mode === 'edit' && service?.id ? (
+          <Button
+            component={RouterLink}
+            href={paths.dashboard.servicePrint(service.id)}
+            color="inherit"
+            variant="outlined"
+            size="large"
+            startIcon={<Iconify icon="solar:printer-minimalistic-bold" />}
+          >
+            Imprimir plano
+          </Button>
+        ) : null}
         <Button
           variant="contained"
           size="large"
@@ -208,6 +291,19 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
           {mode === 'create' ? 'Criar serviço' : 'Salvar alterações'}
         </Button>
       </Stack>
+
+      {form.recipes.length > 0 && (
+        <>
+          <ServiceShoppingList
+            recipes={form.recipes}
+            ingredientsById={ingredientsById}
+          />
+          <ServiceTimeline
+            recipes={form.recipes}
+            serviceDate={fromDatetimeLocalValue(form.service_date_local)}
+          />
+        </>
+      )}
     </Stack>
   );
 }

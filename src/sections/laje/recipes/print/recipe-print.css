@@ -1,0 +1,108 @@
+/* Ficha técnica — impressão A4 (retrato / paisagem) */
+
+.recipe-print-root {
+  --print-ink: #1c1917;
+  --print-muted: #57534e;
+  --print-line: #d6d3d1;
+  --print-accent: #c2410c;
+  color: var(--print-ink);
+}
+
+.recipe-print-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.recipe-print-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.recipe-print-sheet {
+  background: #fff;
+  color: var(--print-ink);
+  border: 1px solid var(--print-line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(28, 25, 23, 0.06);
+  overflow: hidden;
+}
+
+.recipe-print-sheet--a4-portrait {
+  width: min(100%, 210mm);
+  min-height: 297mm;
+  margin-inline: auto;
+  padding: 16mm 14mm;
+}
+
+.recipe-print-sheet--a4-landscape {
+  width: min(100%, 297mm);
+  min-height: 210mm;
+  margin-inline: auto;
+  padding: 12mm 14mm;
+}
+
+.recipe-print-sheet-label {
+  display: inline-flex;
+  margin-bottom: 12px;
+}
+
+@media print {
+  body.recipe-print-mode-portrait,
+  body.recipe-print-mode-landscape {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: #fff !important;
+  }
+
+  /* Esconde chrome do app (prefixo laje__ das layoutClasses) */
+  body.recipe-print-mode-portrait .laje__layout__header,
+  body.recipe-print-mode-landscape .laje__layout__header,
+  body.recipe-print-mode-portrait .laje__layout__nav__root,
+  body.recipe-print-mode-landscape .laje__layout__nav__root,
+  body.recipe-print-mode-portrait .laje__layout__nav__vertical,
+  body.recipe-print-mode-landscape .laje__layout__nav__vertical,
+  body.recipe-print-mode-portrait .laje__layout__nav__horizontal,
+  body.recipe-print-mode-landscape .laje__layout__nav__horizontal,
+  body.recipe-print-mode-portrait .laje__layout__nav__mobile,
+  body.recipe-print-mode-landscape .laje__layout__nav__mobile,
+  .recipe-print-toolbar,
+  .recipe-print-sheet-label,
+  .no-print {
+    display: none !important;
+  }
+
+  body.recipe-print-mode-portrait .recipe-print-preview,
+  body.recipe-print-mode-landscape .recipe-print-preview {
+    gap: 0 !important;
+  }
+
+  body.recipe-print-mode-portrait .recipe-print-sheet,
+  body.recipe-print-mode-landscape .recipe-print-sheet {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Só a folha pedida */
+  body.recipe-print-mode-portrait .recipe-print-sheet--a4-landscape,
+  body.recipe-print-mode-landscape .recipe-print-sheet--a4-portrait {
+    display: none !important;
+  }
+
+  body.recipe-print-mode-portrait .laje__layout__main,
+  body.recipe-print-mode-landscape .laje__layout__main,
+  body.recipe-print-mode-portrait .laje__layout__main__content,
+  body.recipe-print-mode-landscape .laje__layout__main__content {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+}

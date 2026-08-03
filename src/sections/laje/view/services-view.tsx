@@ -21,7 +21,7 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
-import { fDate } from 'src/utils/format-time';
+import { fDateTime } from 'src/utils/format-time';
 
 import { deleteServiceRecord, useGetServiceRecords } from 'src/actions/service-records';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -105,7 +105,7 @@ export function LajeServicesView() {
             <Box sx={{ p: 3 }}>
               <EmptyContent
                 title="Nenhum serviço"
-                description="Crie um serviço com nome, data e as receitas do evento."
+                description="Crie um serviço com nome, data/hora e as receitas do evento."
                 action={
                   <Button
                     component={RouterLink}
@@ -125,7 +125,7 @@ export function LajeServicesView() {
               <TableHead>
                 <TableRow>
                   <TableCell>Nome</TableCell>
-                  <TableCell width={140}>Data</TableCell>
+                  <TableCell width={180}>Data e hora</TableCell>
                   <TableCell width={100}>Receitas</TableCell>
                   <TableCell align="right" width={120}>
                     Ações
@@ -143,7 +143,7 @@ export function LajeServicesView() {
                     <TableCell>
                       <Typography variant="subtitle2">{item.name}</Typography>
                     </TableCell>
-                    <TableCell>{fDate(item.service_date)}</TableCell>
+                    <TableCell>{fDateTime(item.service_date)}</TableCell>
                     <TableCell>{item.recipe_ids?.length ?? 0}</TableCell>
                     <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                       <Tooltip title="Editar">

@@ -19,9 +19,11 @@ const RecipesPage = lazy(() => import('src/pages/dashboard/recipes'));
 const RecipeBookPage = lazy(() => import('src/pages/dashboard/recipe-book'));
 const RecipeBookNewPage = lazy(() => import('src/pages/dashboard/recipe-book-new'));
 const RecipeBookEditPage = lazy(() => import('src/pages/dashboard/recipe-book-edit'));
+const RecipeBookPrintPage = lazy(() => import('src/pages/dashboard/recipe-book-print'));
 const ServicesPage = lazy(() => import('src/pages/dashboard/services'));
 const ServiceNewPage = lazy(() => import('src/pages/dashboard/service-new'));
 const ServiceEditPage = lazy(() => import('src/pages/dashboard/service-edit'));
+const ServicePrintPage = lazy(() => import('src/pages/dashboard/service-print'));
 const CompositionsPage = lazy(() => import('src/pages/dashboard/compositions'));
 const CompositionNewPage = lazy(() => import('src/pages/dashboard/composition-new'));
 const CompositionEditPage = lazy(() => import('src/pages/dashboard/composition-edit'));
@@ -57,9 +59,11 @@ export const dashboardRoutes: RouteObject[] = [
       { path: 'recipes', element: <RecipesPage /> },
       { path: 'recipe-book', element: <RecipeBookPage /> },
       { path: 'recipe-book/new', element: <RecipeBookNewPage /> },
+      { path: 'recipe-book/:id/print', element: <RecipeBookPrintPage /> },
       { path: 'recipe-book/:id', element: <RecipeBookEditPage /> },
       { path: 'services', element: <ServicesPage /> },
       { path: 'services/new', element: <ServiceNewPage /> },
+      { path: 'services/:id/print', element: <ServicePrintPage /> },
       { path: 'services/:id', element: <ServiceEditPage /> },
       { path: 'compositions', element: <CompositionsPage /> },
       { path: 'compositions/new', element: <CompositionNewPage /> },

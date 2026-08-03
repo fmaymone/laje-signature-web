@@ -1,11 +1,14 @@
 import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 
 import { paths } from 'src/routes/paths';
 import { useParams, useRouter } from 'src/routes/hooks';
+import { RouterLink } from 'src/routes/components';
 
 import { useGetRecipeRecord } from 'src/actions/recipe-records';
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { RecipeForm } from '../recipes/recipe-form';
@@ -31,6 +34,18 @@ export function LajeRecipeEditorView({ mode }: Props) {
           { name: 'Receitas', href: paths.dashboard.recipeRecords },
           { name: mode === 'new' ? 'Nova' : 'Editar' },
         ]}
+        action={
+          mode === 'edit' && recipe?.id ? (
+            <Button
+              component={RouterLink}
+              href={paths.dashboard.recipeRecordPrint(recipe.id)}
+              variant="outlined"
+              startIcon={<Iconify icon="solar:printer-minimalistic-bold" />}
+            >
+              Ficha técnica
+            </Button>
+          ) : undefined
+        }
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
