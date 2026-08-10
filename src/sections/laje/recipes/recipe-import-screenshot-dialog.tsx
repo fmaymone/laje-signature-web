@@ -133,7 +133,7 @@ export function RecipeImportScreenshotDialog({ open, onClose }: Props) {
             <Stack spacing={2} sx={{ pt: 0.5 }}>
               <Typography variant="body2" color="text.secondary">
                 Envie um print ou foto da receita. A AI transcreve para o formato do livro — sem
-                reinterpretar o prato.
+                reinterpretar o prato. Textos em inglês são convertidos para português.
               </Typography>
               <Field.Upload
                 name="image"
