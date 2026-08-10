@@ -12,3 +12,10 @@ export async function importRecipeFromImage(file: File): Promise<RecipeImageImpo
 
   return res.data as RecipeImageImportResponse;
 }
+
+export async function generateRecipeFromText(
+  prompt: string
+): Promise<RecipeImageImportResponse> {
+  const res = await axios.post(endpoints.recipeRecords.generateFromText, { prompt });
+  return res.data as RecipeImageImportResponse;
+}

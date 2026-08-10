@@ -73,6 +73,7 @@ export const endpoints = {
     list: '/v1/recipes',
     detail: (id: string) => `/v1/recipes/${id}`,
     importFromImage: '/v1/recipes/import-from-image',
+    generateFromText: '/v1/recipes/generate-from-text',
   },
   ingredients: {
     list: '/v1/ingredients',

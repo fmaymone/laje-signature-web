@@ -33,6 +33,7 @@ import { EmptyContent } from 'src/components/empty-content';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
+import { RecipeGenerateTextDialog } from '../recipes/recipe-generate-text-dialog';
 import { RecipeImportScreenshotDialog } from '../recipes/recipe-import-screenshot-dialog';
 
 // ----------------------------------------------------------------------
@@ -45,6 +46,7 @@ export function LajeRecipeRecordsView() {
   const [pendingDelete, setPendingDelete] = useState<RecipeRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
 
   const handleConfirmDelete = useCallback(async () => {
     if (!pendingDelete) return;
@@ -76,7 +78,14 @@ export function LajeRecipeRecordsView() {
           { name: 'Receitas' },
         ]}
         action={
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            <Button
+              variant="outlined"
+              startIcon={<Iconify icon="solar:magic-stick-3-bold" />}
+              onClick={() => setGenerateOpen(true)}
+            >
+              Gerar com AI
+            </Button>
             <Button
               variant="outlined"
               startIcon={<Iconify icon="solar:camera-add-bold" />}
@@ -120,7 +129,14 @@ export function LajeRecipeRecordsView() {
                 title="Nenhuma receita"
                 description="Crie uma receita com blocos de sabor e passos com tempo antes do serviço."
                 action={
-                  <Stack direction="row" spacing={1}>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    <Button
+                      variant="outlined"
+                      startIcon={<Iconify icon="solar:magic-stick-3-bold" />}
+                      onClick={() => setGenerateOpen(true)}
+                    >
+                      Gerar com AI
+                    </Button>
                     <Button
                       variant="outlined"
                       startIcon={<Iconify icon="solar:camera-add-bold" />}
@@ -234,6 +250,7 @@ export function LajeRecipeRecordsView() {
       />
 
       <RecipeImportScreenshotDialog open={importOpen} onClose={() => setImportOpen(false)} />
+      <RecipeGenerateTextDialog open={generateOpen} onClose={() => setGenerateOpen(false)} />
     </DashboardContent>
   );
 }
