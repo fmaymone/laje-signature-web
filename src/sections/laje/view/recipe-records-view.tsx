@@ -33,6 +33,8 @@ import { EmptyContent } from 'src/components/empty-content';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
+import { RecipeImportScreenshotDialog } from '../recipes/recipe-import-screenshot-dialog';
+
 // ----------------------------------------------------------------------
 
 export function LajeRecipeRecordsView() {
@@ -42,6 +44,7 @@ export function LajeRecipeRecordsView() {
 
   const [pendingDelete, setPendingDelete] = useState<RecipeRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const handleConfirmDelete = useCallback(async () => {
     if (!pendingDelete) return;
@@ -73,14 +76,23 @@ export function LajeRecipeRecordsView() {
           { name: 'Receitas' },
         ]}
         action={
-          <Button
-            component={RouterLink}
-            href={paths.dashboard.recipeRecordNew}
-            variant="contained"
-            startIcon={<Iconify icon="solar:add-circle-bold" />}
-          >
-            Nova receita
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={<Iconify icon="solar:camera-add-bold" />}
+              onClick={() => setImportOpen(true)}
+            >
+              Importar da foto
+            </Button>
+            <Button
+              component={RouterLink}
+              href={paths.dashboard.recipeRecordNew}
+              variant="contained"
+              startIcon={<Iconify icon="solar:add-circle-bold" />}
+            >
+              Nova receita
+            </Button>
+          </Stack>
         }
         sx={{ mb: { xs: 3, md: 5 } }}
       />
@@ -108,14 +120,23 @@ export function LajeRecipeRecordsView() {
                 title="Nenhuma receita"
                 description="Crie uma receita com blocos de sabor e passos com tempo antes do serviço."
                 action={
-                  <Button
-                    component={RouterLink}
-                    href={paths.dashboard.recipeRecordNew}
-                    variant="contained"
-                    startIcon={<Iconify icon="solar:add-circle-bold" />}
-                  >
-                    Nova receita
-                  </Button>
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<Iconify icon="solar:camera-add-bold" />}
+                      onClick={() => setImportOpen(true)}
+                    >
+                      Importar da foto
+                    </Button>
+                    <Button
+                      component={RouterLink}
+                      href={paths.dashboard.recipeRecordNew}
+                      variant="contained"
+                      startIcon={<Iconify icon="solar:add-circle-bold" />}
+                    >
+                      Nova receita
+                    </Button>
+                  </Stack>
                 }
               />
             </Box>
@@ -211,6 +232,8 @@ export function LajeRecipeRecordsView() {
           </Button>
         }
       />
+
+      <RecipeImportScreenshotDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </DashboardContent>
   );
 }

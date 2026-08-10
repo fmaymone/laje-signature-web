@@ -72,6 +72,7 @@ export const endpoints = {
   recipeRecords: {
     list: '/v1/recipes',
     detail: (id: string) => `/v1/recipes/${id}`,
+    importFromImage: '/v1/recipes/import-from-image',
   },
   ingredients: {
     list: '/v1/ingredients',
