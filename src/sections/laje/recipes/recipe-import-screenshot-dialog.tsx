@@ -30,7 +30,7 @@ import { Form, Field, schemaHelper } from 'src/components/hook-form';
 // ----------------------------------------------------------------------
 
 const ImportSchema = zod.object({
-  image: schemaHelper.file({ message: 'Envie um print da receita' }),
+  image: schemaHelper.file({ message: 'Envie um print ou PDF da receita' }),
 });
 
 type ImportSchemaType = zod.infer<typeof ImportSchema>;
@@ -117,7 +117,7 @@ export function RecipeImportScreenshotDialog({ open, onClose }: Props) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle sx={{ pr: 6 }}>
-        Importar da foto
+        Importar da foto ou PDF
         <IconButton
           onClick={onClose}
           sx={{ position: 'absolute', right: 12, top: 12 }}
@@ -132,13 +132,18 @@ export function RecipeImportScreenshotDialog({ open, onClose }: Props) {
           <Form methods={methods} onSubmit={onParse}>
             <Stack spacing={2} sx={{ pt: 0.5 }}>
               <Typography variant="body2" color="text.secondary">
-                Envie um print ou foto da receita. A AI transcreve para o formato do livro — sem
-                reinterpretar o prato. Textos em inglês são convertidos para português.
+                Envie um print, foto ou PDF da receita. A AI transcreve para o formato do livro —
+                sem reinterpretar o prato. Textos em inglês são convertidos para português.
               </Typography>
               <Field.Upload
                 name="image"
-                accept={{ 'image/jpeg': [], 'image/png': [], 'image/webp': [] }}
-                helperText="JPEG, PNG ou WebP · até 8 MB"
+                accept={{
+                  'image/jpeg': [],
+                  'image/png': [],
+                  'image/webp': [],
+                  'application/pdf': [],
+                }}
+                helperText="JPEG, PNG, WebP ou PDF · até 8 MB"
               />
             </Stack>
           </Form>

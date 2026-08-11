@@ -91,7 +91,7 @@ export function LajeRecipeRecordsView() {
               startIcon={<Iconify icon="solar:camera-add-bold" />}
               onClick={() => setImportOpen(true)}
             >
-              Importar da foto
+              Importar foto/PDF
             </Button>
             <Button
               component={RouterLink}
@@ -142,7 +142,7 @@ export function LajeRecipeRecordsView() {
                       startIcon={<Iconify icon="solar:camera-add-bold" />}
                       onClick={() => setImportOpen(true)}
                     >
-                      Importar da foto
+                      Importar foto/PDF
                     </Button>
                     <Button
                       component={RouterLink}
