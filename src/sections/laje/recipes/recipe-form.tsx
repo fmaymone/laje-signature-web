@@ -2,6 +2,7 @@ import type { FlavorBlock } from 'src/types/library';
 import type {
   RecipeIngredientLine,
   RecipeLane,
+  RecipeMiseItem,
   RecipeRecord,
   RecipeStep,
 } from 'src/types/recipe-record';
@@ -35,6 +36,7 @@ import { CustomTabs } from 'src/components/custom-tabs';
 
 import { BlockMultiSelect } from '../blocks/block-multi-select';
 import { RecipeIngredientsEditor } from '../ingredients/recipe-ingredients-editor';
+import { RecipeMiseEditor } from './recipe-mise-editor';
 import { RecipeStepsBoard } from './recipe-steps-board';
 import { RecipeStepsTimeline } from './recipe-steps-timeline';
 import { formatTimeBeforeService } from './recipe-step-time';
@@ -71,6 +73,7 @@ type FormState = {
   ingredients: RecipeIngredientLine[];
   lanes: RecipeLane[];
   steps: RecipeStep[];
+  mise_items: RecipeMiseItem[];
 };
 
 function normalizeLanes(lanes?: RecipeLane[] | null): RecipeLane[] {
@@ -114,6 +117,7 @@ function toForm(recipe: RecipeRecord | null | undefined, blocks: FlavorBlock[]):
     ingredients: [...(recipe?.ingredients ?? [])],
     lanes: normalizeLanes(recipe?.lanes),
     steps: (recipe?.steps ?? []).map(normalizeStep),
+    mise_items: [...(recipe?.mise_items ?? [])],
   };
 }
 
@@ -152,6 +156,26 @@ function serializePayload(form: FormState) {
     })),
     lanes,
     steps,
+    mise_items: form.mise_items
+      .map((item) => {
+        const quantity =
+          item.quantity == null || Number.isNaN(Number(item.quantity))
+            ? null
+            : Number(item.quantity);
+        return {
+          id: item.id,
+          name: item.name.trim(),
+          quantity,
+          unit: item.unit || null,
+          notes: item.notes?.trim() || null,
+          station_id: item.station_id || null,
+          ready_minutes_before_service: Math.max(
+            0,
+            Number(item.ready_minutes_before_service) || 0
+          ),
+        };
+      })
+      .filter((item) => item.name),
   };
 }
 
@@ -240,6 +264,7 @@ export function RecipeForm({ mode, recipe, loading, onSaved }: Props) {
       Boolean(current.composition_id) ||
       current.blocks.length > 0 ||
       current.ingredients.length > 0 ||
+      current.mise_items.some((item) => item.name.trim()) ||
       current.steps.some((s) => s.process.trim());
 
     if (!recipeIdRef.current && !hasContent) {
@@ -564,6 +589,24 @@ export function RecipeForm({ mode, recipe, loading, onSaved }: Props) {
             <RecipeIngredientsEditor
               value={form.ingredients}
               onChange={(next) => patchForm((prev) => ({ ...prev, ingredients: next }))}
+              onBlurSave={flushAutosave}
+            />
+          </Stack>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="h6">Mise en place</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Componentes prontos na bancada no dia do serviço — não é a lista de compras.
+              </Typography>
+            </Box>
+            <RecipeMiseEditor
+              value={form.mise_items}
+              onChange={(next) => patchForm((prev) => ({ ...prev, mise_items: next }))}
               onBlurSave={flushAutosave}
             />
           </Stack>

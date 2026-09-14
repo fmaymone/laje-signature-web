@@ -9,6 +9,8 @@ export { LajeServiceEditorView } from './service-editor-view';
 export { LajeServicePrintView } from './service-print-view';
 export { LajeCompositionsView } from './compositions-view';
 export { LajeCompositionEditorView } from './composition-editor-view';
+export { LajeKitchensView } from './kitchens-view';
+export { LajeKitchenEditorView } from './kitchen-editor-view';
 export { LajeBlocksView } from './blocks-view';
 export { LajeBlockEditorView } from './block-editor-view';
 export { LajeIngredientsView } from './ingredients-view';

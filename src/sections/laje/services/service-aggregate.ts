@@ -1,6 +1,8 @@
 import type { Ingredient } from 'src/types/ingredient';
-import type { RecipeRecord, RecipeStep } from 'src/types/recipe-record';
+import type { RecipeMiseItem, RecipeRecord, RecipeStep } from 'src/types/recipe-record';
+import type { KitchenLayout, KitchenStation } from 'src/types/kitchen-layout';
 
+import { UNIT_OPTIONS } from 'src/types/ingredient';
 import { MAIN_LANE_ID } from 'src/types/recipe-record';
 
 import { niceTimelineSpan } from '../recipes/recipe-step-time';
@@ -76,6 +78,100 @@ export function aggregateShoppingList(
   return [...map.values()].sort((a, b) =>
     a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
   );
+}
+
+export type ServiceMiseLine = {
+  key: string;
+  item: RecipeMiseItem;
+  recipeId: string;
+  recipeTitle: string;
+  quantityLabel: string;
+  readyLabel: string;
+};
+
+export type ServiceMisePlan = {
+  stations: {
+    station: KitchenStation;
+    items: ServiceMiseLine[];
+  }[];
+  unassigned: ServiceMiseLine[];
+};
+
+function unitLabel(unit?: string | null) {
+  if (!unit) return '';
+  return UNIT_OPTIONS.find((opt) => opt.value === unit)?.label ?? unit;
+}
+
+function formatMiseQty(item: RecipeMiseItem) {
+  if (item.quantity == null) {
+    return unitLabel(item.unit);
+  }
+  const qty = Number.isInteger(item.quantity)
+    ? String(item.quantity)
+    : item.quantity.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+  const unit = unitLabel(item.unit);
+  return [qty, unit].filter(Boolean).join(' ');
+}
+
+function formatReady(minutes: number) {
+  if (!minutes || minutes <= 0) return 'no serviço';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h && m) return `${h}h ${m}min antes`;
+  if (h) return `${h}h antes`;
+  return `${m}min antes`;
+}
+
+/** Agrupa componentes de mise das receitas por bancada da planta. */
+export function aggregateMiseByStation(
+  recipes: RecipeRecord[],
+  layout: KitchenLayout | null | undefined
+): ServiceMisePlan {
+  const lines: ServiceMiseLine[] = [];
+
+  for (const recipe of recipes) {
+    for (const item of recipe.mise_items ?? []) {
+      if (!item.name?.trim()) continue;
+      lines.push({
+        key: `${recipe.id}::${item.id}`,
+        item,
+        recipeId: recipe.id,
+        recipeTitle: recipe.title,
+        quantityLabel: formatMiseQty(item),
+        readyLabel: formatReady(item.ready_minutes_before_service),
+      });
+    }
+  }
+
+  lines.sort((a, b) => {
+    if (b.item.ready_minutes_before_service !== a.item.ready_minutes_before_service) {
+      return b.item.ready_minutes_before_service - a.item.ready_minutes_before_service;
+    }
+    return a.item.name.localeCompare(b.item.name, 'pt-BR', { sensitivity: 'base' });
+  });
+
+  const stationIds = new Set((layout?.stations ?? []).map((station) => station.id));
+  const byStation = new Map<string, ServiceMiseLine[]>();
+  const unassigned: ServiceMiseLine[] = [];
+
+  for (const line of lines) {
+    const stationId = line.item.station_id || '';
+    if (stationId && stationIds.has(stationId)) {
+      const bucket = byStation.get(stationId) ?? [];
+      bucket.push(line);
+      byStation.set(stationId, bucket);
+    } else {
+      unassigned.push(line);
+    }
+  }
+
+  return {
+    stations: (layout?.stations ?? []).map((station) => ({
+      station,
+      items: byStation.get(station.id) ?? [],
+    })),
+    unassigned,
+  };
 }
 
 /** Une passos de todas as receitas pela antecedência ao serviço. */

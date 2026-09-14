@@ -25,6 +25,16 @@ export type RecipeIngredientLine = {
   notes?: string | null;
 };
 
+export type RecipeMiseItem = {
+  id: string;
+  name: string;
+  quantity?: number | null;
+  unit?: IngredientUnit | string | null;
+  notes?: string | null;
+  station_id?: string | null;
+  ready_minutes_before_service: number;
+};
+
 export type RecipeRecord = {
   id: string;
   title: string;
@@ -36,6 +46,7 @@ export type RecipeRecord = {
   ingredients: RecipeIngredientLine[];
   lanes: RecipeLane[];
   steps: RecipeStep[];
+  mise_items: RecipeMiseItem[];
   created_at: string;
   updated_at: string;
 };
@@ -49,6 +60,7 @@ export type RecipeRecordCreate = {
   ingredients?: RecipeIngredientLine[];
   lanes?: RecipeLane[];
   steps?: RecipeStep[];
+  mise_items?: RecipeMiseItem[];
 };
 
 export type RecipeRecordUpdate = {
@@ -60,6 +72,7 @@ export type RecipeRecordUpdate = {
   ingredients?: RecipeIngredientLine[];
   lanes?: RecipeLane[];
   steps?: RecipeStep[];
+  mise_items?: RecipeMiseItem[];
 };
 
 export type RecipeRecordListResponse = {

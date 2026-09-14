@@ -89,6 +89,10 @@ export const endpoints = {
     graphs: '/v1/compose/graphs',
     graph: (id: string) => `/v1/compose/graphs/${id}`,
   },
+  kitchenLayouts: {
+    list: '/v1/kitchen-layouts',
+    detail: (id: string) => `/v1/kitchen-layouts/${id}`,
+  },
   blocks: {
     list: '/v1/blocks',
     detail: (id: string) => `/v1/blocks/${id}`,

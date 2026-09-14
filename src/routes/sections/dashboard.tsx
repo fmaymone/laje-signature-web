@@ -27,6 +27,9 @@ const ServicePrintPage = lazy(() => import('src/pages/dashboard/service-print'))
 const CompositionsPage = lazy(() => import('src/pages/dashboard/compositions'));
 const CompositionNewPage = lazy(() => import('src/pages/dashboard/composition-new'));
 const CompositionEditPage = lazy(() => import('src/pages/dashboard/composition-edit'));
+const KitchenPage = lazy(() => import('src/pages/dashboard/kitchen'));
+const KitchenNewPage = lazy(() => import('src/pages/dashboard/kitchen-new'));
+const KitchenEditPage = lazy(() => import('src/pages/dashboard/kitchen-edit'));
 const BlocksPage = lazy(() => import('src/pages/dashboard/blocks'));
 const BlockNewPage = lazy(() => import('src/pages/dashboard/block-new'));
 const BlockEditPage = lazy(() => import('src/pages/dashboard/block-edit'));
@@ -68,6 +71,9 @@ export const dashboardRoutes: RouteObject[] = [
       { path: 'compositions', element: <CompositionsPage /> },
       { path: 'compositions/new', element: <CompositionNewPage /> },
       { path: 'compositions/:id', element: <CompositionEditPage /> },
+      { path: 'kitchen', element: <KitchenPage /> },
+      { path: 'kitchen/new', element: <KitchenNewPage /> },
+      { path: 'kitchen/:id', element: <KitchenEditPage /> },
       { path: 'blocks', element: <BlocksPage /> },
       { path: 'blocks/new', element: <BlockNewPage /> },
       { path: 'blocks/:id', element: <BlockEditPage /> },

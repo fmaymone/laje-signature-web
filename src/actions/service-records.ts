@@ -78,6 +78,7 @@ export async function createServiceRecord(
     notes: payload.notes ?? null,
     service_date: payload.service_date,
     recipe_ids: payload.recipe_ids ?? [],
+    kitchen_layout_id: payload.kitchen_layout_id ?? null,
   });
   await refreshServiceCaches(res.data?.id);
   return res.data as ServiceRecord;

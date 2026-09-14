@@ -5,6 +5,7 @@ export type ServiceRecord = {
   owner_id?: string | null;
   service_date: string;
   recipe_ids: string[];
+  kitchen_layout_id?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -14,6 +15,7 @@ export type ServiceRecordCreate = {
   notes?: string | null;
   service_date: string;
   recipe_ids?: string[];
+  kitchen_layout_id?: string | null;
 };
 
 export type ServiceRecordUpdate = {
@@ -21,6 +23,7 @@ export type ServiceRecordUpdate = {
   notes?: string | null;
   service_date?: string;
   recipe_ids?: string[];
+  kitchen_layout_id?: string | null;
 };
 
 export type ServiceRecordListResponse = {

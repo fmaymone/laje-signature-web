@@ -13,6 +13,7 @@ import { useParams } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
 import { useGetIngredients } from 'src/actions/ingredients';
+import { useGetKitchenLayouts } from 'src/actions/kitchen-layouts';
 import { useGetRecipeRecords } from 'src/actions/recipe-records';
 import { useGetServiceRecord } from 'src/actions/service-records';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -24,6 +25,7 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { printRecipeSheet } from '../recipes/print/print-sheet';
 import { ServiceShoppingSheet } from '../services/print/service-shopping-sheet';
 import { ServiceTimelineSheet } from '../services/print/service-timeline-sheet';
+import { ServiceMiseSheets } from '../services/print/service-mise-sheet';
 
 import '../recipes/print/recipe-print.css';
 
@@ -35,6 +37,7 @@ export function LajeServicePrintView() {
   const { service, serviceLoading, serviceError } = useGetServiceRecord(serviceId || null);
   const { recipes, recipesLoading } = useGetRecipeRecords();
   const { ingredients } = useGetIngredients();
+  const { layouts } = useGetKitchenLayouts();
 
   const selectedRecipes = useMemo(() => {
     if (!service) return [];
@@ -48,6 +51,14 @@ export function LajeServicePrintView() {
     () => new Map(ingredients.map((item) => [item.id, item])),
     [ingredients]
   );
+
+  const layout = useMemo(() => {
+    if (!layouts.length) return null;
+    if (service?.kitchen_layout_id) {
+      return layouts.find((item) => item.id === service.kitchen_layout_id) ?? null;
+    }
+    return layouts.length === 1 ? layouts[0] : null;
+  }, [layouts, service]);
 
   const loading = (serviceLoading && !service) || recipesLoading;
 
@@ -114,6 +125,14 @@ export function LajeServicePrintView() {
               >
                 Imprimir timeline (A4 paisagem)
               </Button>
+              <Button
+                variant="contained"
+                color="inherit"
+                startIcon={<Iconify icon="solar:chef-hat-bold" />}
+                onClick={() => printRecipeSheet('mise')}
+              >
+                Imprimir bancadas (A4)
+              </Button>
             </Stack>
           }
           sx={{ mb: { xs: 3, md: 4 } }}
@@ -122,8 +141,8 @@ export function LajeServicePrintView() {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="body2" color="text.secondary">
-              Duas folhas A4: lista de compras em retrato e timeline agregada em paisagem. Na
-              caixa de impressão, confirme a orientação conforme o botão escolhido.
+              Três conjuntos: lista de compras (retrato), timeline (paisagem) e uma ficha por
+              bancada (retrato). Na caixa de impressão, confirme a orientação conforme o botão.
             </Typography>
           </CardContent>
         </Card>
@@ -147,6 +166,13 @@ export function LajeServicePrintView() {
           </Typography>
         </Box>
         <ServiceTimelineSheet service={service} recipes={selectedRecipes} />
+
+        <Box className="recipe-print-sheet-label no-print" sx={{ mt: 2 }}>
+          <Typography variant="caption" color="text.secondary">
+            Fichas de bancada · Mise en place (A4 retrato)
+          </Typography>
+        </Box>
+        <ServiceMiseSheets service={service} recipes={selectedRecipes} layout={layout} />
       </Box>
     </DashboardContent>
   );

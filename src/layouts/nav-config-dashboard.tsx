@@ -31,6 +31,11 @@ export const navData: NavSectionProps['data'] = [
         icon: <Iconify width={24} icon="solar:calendar-bold-duotone" />,
       },
       {
+        title: 'Cozinha',
+        path: paths.dashboard.kitchen,
+        icon: <Iconify width={24} icon="solar:widget-4-bold-duotone" />,
+      },
+      {
         title: 'Composições',
         path: paths.dashboard.compositions,
         icon: <Iconify width={24} icon="solar:widget-5-bold-duotone" />,

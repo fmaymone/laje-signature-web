@@ -101,6 +101,7 @@ export async function createRecipeRecord(
     ingredients: payload.ingredients ?? [],
     lanes: payload.lanes ?? [{ id: 'main', name: 'Principal' }],
     steps: payload.steps ?? [],
+    mise_items: payload.mise_items ?? [],
   });
   const recipe = res.data as RecipeRecord;
   startTransition(() => {
@@ -130,6 +131,7 @@ export async function updateRecipeRecord(
       ingredients: payload.ingredients ?? previous.ingredients,
       lanes: payload.lanes ?? previous.lanes,
       steps: payload.steps ?? previous.steps,
+      mise_items: payload.mise_items ?? previous.mise_items ?? [],
       updated_at: new Date().toISOString(),
     };
     await globalMutate(endpoints.recipeRecords.detail(recipeId), optimistic, {

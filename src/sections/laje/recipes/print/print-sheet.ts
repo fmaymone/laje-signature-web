@@ -1,15 +1,22 @@
-export type RecipePrintMode = 'portrait' | 'landscape';
+export type RecipePrintMode = 'portrait' | 'landscape' | 'mise';
 
 const STYLE_ID = 'laje-recipe-print-page';
 const BODY_CLASS_PORTRAIT = 'recipe-print-mode-portrait';
 const BODY_CLASS_LANDSCAPE = 'recipe-print-mode-landscape';
+const BODY_CLASS_MISE = 'recipe-print-mode-mise';
 
 function cleanupPrintMode() {
-  document.body.classList.remove(BODY_CLASS_PORTRAIT, BODY_CLASS_LANDSCAPE);
+  document.body.classList.remove(BODY_CLASS_PORTRAIT, BODY_CLASS_LANDSCAPE, BODY_CLASS_MISE);
   document.getElementById(STYLE_ID)?.remove();
 }
 
-/** Imprime uma folha A4 (retrato ou paisagem). */
+function bodyClass(mode: RecipePrintMode) {
+  if (mode === 'landscape') return BODY_CLASS_LANDSCAPE;
+  if (mode === 'mise') return BODY_CLASS_MISE;
+  return BODY_CLASS_PORTRAIT;
+}
+
+/** Imprime uma folha A4 (retrato, paisagem ou fichas de mise). */
 export function printRecipeSheet(mode: RecipePrintMode) {
   cleanupPrintMode();
 
@@ -21,25 +28,13 @@ export function printRecipeSheet(mode: RecipePrintMode) {
       : '@page { size: A4 portrait; margin: 10mm; }';
   document.head.appendChild(style);
 
-  document.body.classList.add(
-    mode === 'landscape' ? BODY_CLASS_LANDSCAPE : BODY_CLASS_PORTRAIT
-  );
+  document.body.classList.add(bodyClass(mode));
 
   const onAfterPrint = () => {
     cleanupPrintMode();
     window.removeEventListener('afterprint', onAfterPrint);
   };
   window.addEventListener('afterprint', onAfterPrint);
-
-  // Fallback se afterprint não disparar (alguns browsers).
-  window.setTimeout(() => {
-    if (
-      document.body.classList.contains(BODY_CLASS_PORTRAIT) ||
-      document.body.classList.contains(BODY_CLASS_LANDSCAPE)
-    ) {
-      // ainda em modo print — afterprint provavelmente virá; não limpa cedo demais
-    }
-  }, 0);
 
   window.print();
 }

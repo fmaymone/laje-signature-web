@@ -1,5 +1,6 @@
 import type { RecipeRecord } from 'src/types/recipe-record';
 import type { ServiceRecord } from 'src/types/service-record';
+import type { KitchenLayout } from 'src/types/kitchen-layout';
 
 import { useEffect, useMemo, useState } from 'react';
 
@@ -14,8 +15,10 @@ import Typography from '@mui/material/Typography';
 import Autocomplete from '@mui/material/Autocomplete';
 import CardContent from '@mui/material/CardContent';
 import CircularProgress from '@mui/material/CircularProgress';
+import MenuItem from '@mui/material/MenuItem';
 
 import { useGetIngredients } from 'src/actions/ingredients';
+import { useGetKitchenLayouts } from 'src/actions/kitchen-layouts';
 import { useGetRecipeRecords } from 'src/actions/recipe-records';
 import { createServiceRecord, updateServiceRecord } from 'src/actions/service-records';
 
@@ -32,6 +35,7 @@ import {
 } from './service-aggregate';
 import { ServiceShoppingList } from './service-shopping-list';
 import { ServiceTimeline } from './service-timeline';
+import { ServiceMiseFloor } from './service-mise-floor';
 
 // ----------------------------------------------------------------------
 
@@ -50,10 +54,17 @@ type FormState = {
   /** Valor datetime-local (YYYY-MM-DDTHH:mm). */
   service_date_local: string;
   recipes: RecipeRecord[];
+  kitchen_layout_id: string;
 };
 
-function toForm(service: ServiceRecord | null | undefined, recipes: RecipeRecord[]): FormState {
+function toForm(
+  service: ServiceRecord | null | undefined,
+  recipes: RecipeRecord[],
+  layouts: KitchenLayout[]
+): FormState {
   const byId = new Map(recipes.map((r) => [r.id, r]));
+  const savedLayout = service?.kitchen_layout_id ?? '';
+  const fallbackLayout = !savedLayout && layouts.length === 1 ? layouts[0].id : savedLayout;
   return {
     name: service?.name ?? '',
     notes: service?.notes ?? '',
@@ -61,6 +72,7 @@ function toForm(service: ServiceRecord | null | undefined, recipes: RecipeRecord
       ? toDatetimeLocalValue(service.service_date)
       : defaultServiceDatetimeLocal(),
     recipes: (service?.recipe_ids ?? []).map((id) => byId.get(id)).filter(Boolean) as RecipeRecord[],
+    kitchen_layout_id: fallbackLayout,
   };
 }
 
@@ -74,7 +86,8 @@ type Props = {
 export function ServiceForm({ mode, service, loading, onSaved }: Props) {
   const { recipes } = useGetRecipeRecords();
   const { ingredients } = useGetIngredients();
-  const [form, setForm] = useState<FormState>(() => toForm(service, []));
+  const { layouts } = useGetKitchenLayouts();
+  const [form, setForm] = useState<FormState>(() => toForm(service, [], []));
   const [saving, setSaving] = useState(false);
 
   const ingredientsById = useMemo(
@@ -83,8 +96,8 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
   );
 
   useEffect(() => {
-    setForm(toForm(service, recipes));
-  }, [service, recipes]);
+    setForm(toForm(service, recipes, layouts));
+  }, [service, recipes, layouts]);
 
   if (loading) {
     return (
@@ -111,6 +124,7 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
       notes: form.notes.trim() || null,
       service_date: fromDatetimeLocalValue(form.service_date_local),
       recipe_ids: form.recipes.map((r) => r.id),
+      kitchen_layout_id: form.kitchen_layout_id || null,
     };
 
     setSaving(true);
@@ -160,6 +174,23 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
               value={form.notes}
               onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
             />
+            <TextField
+              select
+              label="Planta da cozinha"
+              fullWidth
+              value={form.kitchen_layout_id}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, kitchen_layout_id: e.target.value }))
+              }
+              helperText="Usada no dia do serviço para mostrar o que está pronto em cada bancada."
+            >
+              <MenuItem value="">Nenhuma</MenuItem>
+              {layouts.map((layout) => (
+                <MenuItem key={layout.id} value={layout.id}>
+                  {layout.name} ({layout.stations?.length ?? 0} estações)
+                </MenuItem>
+              ))}
+            </TextField>
           </Stack>
         </CardContent>
       </Card>
@@ -297,6 +328,10 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
           <ServiceShoppingList
             recipes={form.recipes}
             ingredientsById={ingredientsById}
+          />
+          <ServiceMiseFloor
+            recipes={form.recipes}
+            layout={layouts.find((item) => item.id === form.kitchen_layout_id) ?? null}
           />
           <ServiceTimeline
             recipes={form.recipes}
