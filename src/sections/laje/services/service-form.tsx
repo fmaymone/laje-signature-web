@@ -343,6 +343,18 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
         {mode === 'edit' && service?.id ? (
           <Button
             component={RouterLink}
+            href={`${paths.dashboard.servicePrint(service.id)}?print=missing`}
+            color="inherit"
+            variant="outlined"
+            size="large"
+            startIcon={<Iconify icon="solar:clipboard-list-bold" />}
+          >
+            Imprimir faltando
+          </Button>
+        ) : null}
+        {mode === 'edit' && service?.id ? (
+          <Button
+            component={RouterLink}
             href={paths.dashboard.servicePrint(service.id)}
             color="inherit"
             variant="outlined"
@@ -374,6 +386,11 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
           <ServiceShoppingList
             recipes={form.recipes}
             ingredientsById={ingredientsById}
+            printMissingHref={
+              mode === 'edit' && service?.id
+                ? `${paths.dashboard.servicePrint(service.id)}?print=missing`
+                : null
+            }
           />
           <ServiceMiseFloor
             recipes={form.recipes}

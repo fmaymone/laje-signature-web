@@ -80,6 +80,22 @@ export function aggregateShoppingList(
   );
 }
 
+/** Itens ainda não comprados: status Faltando, ou ingrediente fora do catálogo. */
+export function isMissingShoppingLine(
+  ingredientId: string,
+  ingredientsById: Map<string, Ingredient>
+) {
+  const ingredient = ingredientsById.get(ingredientId);
+  return !ingredient || ingredient.status === 'out_of_stock';
+}
+
+export function filterMissingShoppingList(
+  lines: ShoppingLine[],
+  ingredientsById: Map<string, Ingredient>
+) {
+  return lines.filter((line) => isMissingShoppingLine(line.ingredient_id, ingredientsById));
+}
+
 export type ServiceMiseLine = {
   key: string;
   item: RecipeMiseItem;

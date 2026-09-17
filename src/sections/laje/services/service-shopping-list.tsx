@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
+import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
@@ -17,10 +18,13 @@ import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { RouterLink } from 'src/routes/components';
+
 import { updateIngredientStock } from 'src/actions/ingredients';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
+import { Iconify } from 'src/components/iconify';
 import { EmptyContent } from 'src/components/empty-content';
 
 import {
@@ -61,15 +65,27 @@ function errorMessage(err: unknown) {
 type Props = {
   recipes: RecipeRecord[];
   ingredientsById: Map<string, Ingredient>;
+  printMissingHref?: string | null;
 };
 
-export function ServiceShoppingList({ recipes, ingredientsById }: Props) {
+export function ServiceShoppingList({ recipes, ingredientsById, printMissingHref }: Props) {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [pendingStatus, setPendingStatus] = useState<Record<string, IngredientStockStatus>>({});
 
   const lines = useMemo(
     () => aggregateShoppingList(recipes, ingredientsById),
     [recipes, ingredientsById]
+  );
+  const missingCount = useMemo(
+    () =>
+      lines.filter((line) => {
+        const status =
+          pendingStatus[line.ingredient_id] ??
+          ingredientsById.get(line.ingredient_id)?.status ??
+          'out_of_stock';
+        return status === 'out_of_stock';
+      }).length,
+    [ingredientsById, lines, pendingStatus]
   );
 
   const handleStatus = async (ingredientId: string, status: IngredientStockStatus) => {
@@ -96,14 +112,33 @@ export function ServiceShoppingList({ recipes, ingredientsById }: Props) {
     <Card>
       <CardContent>
         <Stack spacing={2}>
-          <Box>
-            <Typography variant="h6">Lista de compras</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Ingredientes somados de todas as receitas do serviço
-              {lines.length ? ` · ${lines.length} itens` : ''}. Troque o status na linha para
-              marcar o que já tem, o que falta ou o que está em pedido.
-            </Typography>
-          </Box>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ sm: 'flex-start' }}
+            spacing={1.5}
+          >
+            <Box>
+              <Typography variant="h6">Lista de compras</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Ingredientes somados de todas as receitas do serviço
+                {lines.length ? ` · ${lines.length} itens` : ''}
+                {lines.length ? ` · ${missingCount} faltando` : ''}. Troque o status na linha para
+                marcar o que já tem, o que falta ou o que está em pedido.
+              </Typography>
+            </Box>
+            {printMissingHref ? (
+              <Button
+                component={RouterLink}
+                href={printMissingHref}
+                color="inherit"
+                variant="outlined"
+                startIcon={<Iconify icon="solar:printer-minimalistic-bold" />}
+              >
+                Imprimir faltando{missingCount ? ` (${missingCount})` : ''}
+              </Button>
+            ) : null}
+          </Stack>
 
           {lines.length === 0 ? (
             <EmptyContent

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -9,7 +9,7 @@ import CardContent from '@mui/material/CardContent';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/routes/paths';
-import { useParams } from 'src/routes/hooks';
+import { useParams, useSearchParams } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
 import { useGetIngredients } from 'src/actions/ingredients';
@@ -33,10 +33,11 @@ import '../recipes/print/recipe-print.css';
 
 export function LajeServicePrintView() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const serviceId = String(params.id ?? '');
   const { service, serviceLoading, serviceError } = useGetServiceRecord(serviceId || null);
   const { recipes, recipesLoading } = useGetRecipeRecords();
-  const { ingredients } = useGetIngredients();
+  const { ingredients, ingredientsLoading } = useGetIngredients();
   const { layouts } = useGetKitchenLayouts();
 
   const selectedRecipes = useMemo(() => {
@@ -60,7 +61,16 @@ export function LajeServicePrintView() {
     return layouts.length === 1 ? layouts[0] : null;
   }, [layouts, service]);
 
-  const loading = (serviceLoading && !service) || recipesLoading;
+  const loading = (serviceLoading && !service) || recipesLoading || ingredientsLoading;
+  const autoPrinted = useRef(false);
+
+  useEffect(() => {
+    if (autoPrinted.current) return undefined;
+    if (loading || !service || searchParams.get('print') !== 'missing') return undefined;
+    autoPrinted.current = true;
+    const timer = window.setTimeout(() => printRecipeSheet('shopping-missing'), 400);
+    return () => window.clearTimeout(timer);
+  }, [loading, searchParams, service]);
 
   if (loading) {
     return (
@@ -120,6 +130,14 @@ export function LajeServicePrintView() {
               </Button>
               <Button
                 variant="contained"
+                color="warning"
+                startIcon={<Iconify icon="solar:bag-check-bold" />}
+                onClick={() => printRecipeSheet('shopping-missing')}
+              >
+                Imprimir faltando (A4)
+              </Button>
+              <Button
+                variant="contained"
                 startIcon={<Iconify icon="solar:chart-2-bold" />}
                 onClick={() => printRecipeSheet('landscape')}
               >
@@ -141,8 +159,9 @@ export function LajeServicePrintView() {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="body2" color="text.secondary">
-              Três conjuntos: lista de compras (retrato), timeline (paisagem) e uma ficha por
-              bancada (retrato). Na caixa de impressão, confirme a orientação conforme o botão.
+              Quatro conjuntos: lista completa, só o que está faltando, timeline (paisagem) e
+              uma ficha por bancada. Na caixa de impressão, confirme a orientação conforme o
+              botão.
             </Typography>
           </CardContent>
         </Card>
@@ -158,6 +177,18 @@ export function LajeServicePrintView() {
           service={service}
           recipes={selectedRecipes}
           ingredientsById={ingredientsById}
+        />
+
+        <Box className="recipe-print-sheet-label no-print" sx={{ mt: 2 }}>
+          <Typography variant="caption" color="text.secondary">
+            Folha 1b · Compras faltando (A4 retrato)
+          </Typography>
+        </Box>
+        <ServiceShoppingSheet
+          service={service}
+          recipes={selectedRecipes}
+          ingredientsById={ingredientsById}
+          onlyMissing
         />
 
         <Box className="recipe-print-sheet-label no-print" sx={{ mt: 2 }}>

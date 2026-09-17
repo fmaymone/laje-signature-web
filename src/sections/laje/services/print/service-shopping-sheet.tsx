@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import { UNIT_OPTIONS } from 'src/types/ingredient';
 import { fDateTime } from 'src/utils/format-time';
 
-import { aggregateShoppingList } from '../service-aggregate';
+import { aggregateShoppingList, filterMissingShoppingList } from '../service-aggregate';
 
 // ----------------------------------------------------------------------
 
@@ -28,22 +28,37 @@ type Props = {
   service: ServiceRecord;
   recipes: RecipeRecord[];
   ingredientsById: Map<string, Ingredient>;
+  onlyMissing?: boolean;
 };
 
-export function ServiceShoppingSheet({ service, recipes, ingredientsById }: Props) {
-  const lines = useMemo(
+export function ServiceShoppingSheet({
+  service,
+  recipes,
+  ingredientsById,
+  onlyMissing = false,
+}: Props) {
+  const allLines = useMemo(
     () => aggregateShoppingList(recipes, ingredientsById),
     [recipes, ingredientsById]
   );
+  const lines = useMemo(
+    () =>
+      onlyMissing ? filterMissingShoppingList(allLines, ingredientsById) : allLines,
+    [allLines, ingredientsById, onlyMissing]
+  );
 
   return (
-    <Box className="recipe-print-sheet recipe-print-sheet--a4-portrait">
+    <Box
+      className={`recipe-print-sheet recipe-print-sheet--a4-portrait${
+        onlyMissing ? ' recipe-print-sheet--shopping-missing' : ''
+      }`}
+    >
       <Stack spacing={0.5} sx={{ mb: 2.5, pb: 1.5, borderBottom: '2px solid #1c1917' }}>
         <Typography
           variant="overline"
           sx={{ letterSpacing: 1.4, color: '#c2410c', fontWeight: 700 }}
         >
-          Laje Signature · Plano do serviço
+          Laje Signature · {onlyMissing ? 'Compras · Faltando' : 'Plano do serviço'}
         </Typography>
         <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1.15 }}>
           {service.name}
@@ -54,7 +69,7 @@ export function ServiceShoppingSheet({ service, recipes, ingredientsById }: Prop
           </Typography>
           <Typography variant="body2" sx={{ color: '#57534e' }}>
             {recipes.length} {recipes.length === 1 ? 'receita' : 'receitas'} · {lines.length}{' '}
-            itens
+            {onlyMissing ? `faltando de ${allLines.length}` : 'itens'}
           </Typography>
         </Stack>
         {service.notes ? (
@@ -92,12 +107,16 @@ export function ServiceShoppingSheet({ service, recipes, ingredientsById }: Prop
         variant="subtitle2"
         sx={{ mb: 1, textTransform: 'uppercase', letterSpacing: 0.8 }}
       >
-        Lista de compras
+        Lista de compras{onlyMissing ? ' · somente faltando' : ''}
       </Typography>
 
       {lines.length === 0 ? (
         <Typography variant="body2" sx={{ color: '#78716c' }}>
-          Nenhum ingrediente nas receitas selecionadas.
+          {onlyMissing
+            ? allLines.length
+              ? 'Nada faltando neste serviço — os itens estão em estoque, em pedido ou com estoque baixo.'
+              : 'Nenhum ingrediente nas receitas selecionadas.'
+            : 'Nenhum ingrediente nas receitas selecionadas.'}
         </Typography>
       ) : (
         <Box
