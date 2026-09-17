@@ -79,6 +79,7 @@ export async function createServiceRecord(
     service_date: payload.service_date,
     recipe_ids: payload.recipe_ids ?? [],
     kitchen_layout_id: payload.kitchen_layout_id ?? null,
+    completed_steps: payload.completed_steps ?? [],
   });
   await refreshServiceCaches(res.data?.id);
   return res.data as ServiceRecord;
@@ -90,6 +91,12 @@ export async function updateServiceRecord(
 ): Promise<ServiceRecord> {
   const res = await axios.put(endpoints.services.detail(serviceId), payload);
   await refreshServiceCaches(serviceId);
+  return res.data as ServiceRecord;
+}
+
+export async function duplicateServiceRecord(serviceId: string): Promise<ServiceRecord> {
+  const res = await axios.post(endpoints.services.duplicate(serviceId));
+  await refreshServiceCaches(res.data?.id);
   return res.data as ServiceRecord;
 }
 

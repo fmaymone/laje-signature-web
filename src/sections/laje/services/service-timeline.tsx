@@ -1,18 +1,24 @@
 import type { RecipeRecord } from 'src/types/recipe-record';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { varAlpha } from 'minimal-shared/utils';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
+import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { fDateTime } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
+import { toast } from 'src/components/snackbar';
 import { EmptyContent } from 'src/components/empty-content';
+
+import { stepCompletionKey } from 'src/types/service-record';
 
 import {
   buildAxisTicks,
@@ -34,12 +40,39 @@ const ROW_H = 32;
 type Props = {
   recipes: RecipeRecord[];
   serviceDate: string;
+  serviceId?: string | null;
+  completedSteps?: string[];
+  onCompletedStepsChange?: (next: string[]) => Promise<void>;
 };
 
-export function ServiceTimeline({ recipes, serviceDate }: Props) {
+function errorMessage(err: unknown) {
+  if (typeof err === 'string') return err;
+  if (err && typeof err === 'object' && 'detail' in err) {
+    return String((err as { detail: unknown }).detail);
+  }
+  if (err instanceof Error) return err.message;
+  return 'Falha ao atualizar processo';
+}
+
+export function ServiceTimeline({
+  recipes,
+  serviceDate,
+  serviceId,
+  completedSteps = [],
+  onCompletedStepsChange,
+}: Props) {
   const plan = useMemo(() => aggregateServiceTimeline(recipes), [recipes]);
   const ticks = useMemo(() => buildAxisTicks(plan.spanMinutes), [plan.spanMinutes]);
   const leadStart = leadStartDateTimeISO(serviceDate, plan.leadMinutes);
+  const [pendingSteps, setPendingSteps] = useState<string[] | null>(null);
+  const [savingKey, setSavingKey] = useState<string | null>(null);
+
+  const completed = pendingSteps ?? completedSteps;
+  const completedSet = useMemo(() => new Set(completed), [completed]);
+  const doneCount = plan.items.filter((item) =>
+    completedSet.has(stepCompletionKey(item.recipeId, item.step.id))
+  ).length;
+  const canCheck = Boolean(serviceId && onCompletedStepsChange);
 
   const recipeRows = useMemo(() => {
     const order: string[] = [];
@@ -66,6 +99,27 @@ export function ServiceTimeline({ recipes, serviceDate }: Props) {
     return `${Math.max(pct, 0.8)}%`;
   };
 
+  const handleToggle = async (key: string, checked: boolean) => {
+    if (!canCheck || !onCompletedStepsChange) {
+      toast.info('Salve o serviço para marcar processos neste evento.');
+      return;
+    }
+    const next = checked
+      ? [...new Set([...completed, key])]
+      : completed.filter((item) => item !== key);
+    setPendingSteps(next);
+    setSavingKey(key);
+    try {
+      await onCompletedStepsChange(next);
+      setPendingSteps(null);
+    } catch (err) {
+      toast.error(errorMessage(err));
+      setPendingSteps(null);
+    } finally {
+      setSavingKey((current) => (current === key ? null : current));
+    }
+  };
+
   return (
     <Card>
       <CardContent>
@@ -78,11 +132,14 @@ export function ServiceTimeline({ recipes, serviceDate }: Props) {
             <Box>
               <Typography variant="h6">Timeline do serviço</Typography>
               <Typography variant="body2" color="text.secondary">
-                Processos de todas as receitas alinhados pela antecedência até o serviço.
+                Marque os processos concluídos neste serviço. A receita original não muda.
               </Typography>
             </Box>
             {plan.items.length > 0 && (
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Label variant="soft" color={doneCount === plan.items.length ? 'success' : 'warning'}>
+                  {doneCount}/{plan.items.length} concluídos
+                </Label>
                 <Label variant="soft" color="warning">
                   {formatLeadSummary(plan.leadMinutes)}
                 </Label>
@@ -181,46 +238,59 @@ export function ServiceTimeline({ recipes, serviceDate }: Props) {
                         />
                       ))}
 
-                      {row.items.map((item) => (
-                        <Box
-                          key={`${item.recipeId}-${item.step.id}`}
-                          title={`${item.index}. ${item.step.process}`}
-                          sx={{
-                            position: 'absolute',
-                            left: toLeft(item.start),
-                            width: toWidth(item.start, item.end),
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            height: 12,
-                            borderRadius: 0.5,
-                            bgcolor: (t) => varAlpha(t.vars.palette.primary.mainChannel, 0.22),
-                            border: (t) => `1px solid ${t.vars.palette.primary.main}`,
-                          }}
-                        >
+                      {row.items.map((item) => {
+                        const key = stepCompletionKey(item.recipeId, item.step.id);
+                        const done = completedSet.has(key);
+                        return (
                           <Box
+                            key={key}
+                            title={`${item.index}. ${item.step.process}${done ? ' (concluído)' : ''}`}
+                            onClick={() => void handleToggle(key, !done)}
                             sx={{
                               position: 'absolute',
-                              left: 0,
+                              left: toLeft(item.start),
+                              width: toWidth(item.start, item.end),
                               top: '50%',
-                              transform: 'translate(-40%, -50%)',
-                              width: 20,
-                              height: 20,
-                              borderRadius: '50%',
-                              bgcolor: 'primary.main',
-                              color: 'primary.contrastText',
-                              typography: 'caption',
-                              fontWeight: 800,
-                              fontSize: 10,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: (t) => `0 0 0 2px ${t.vars.palette.background.paper}`,
+                              transform: 'translateY(-50%)',
+                              height: 12,
+                              borderRadius: 0.5,
+                              cursor: 'pointer',
+                              opacity: done ? 0.45 : 1,
+                              bgcolor: (t) =>
+                                varAlpha(
+                                  (done ? t.vars.palette.success : t.vars.palette.primary)
+                                    .mainChannel,
+                                  0.22
+                                ),
+                              border: (t) =>
+                                `1px solid ${done ? t.vars.palette.success.main : t.vars.palette.primary.main}`,
                             }}
                           >
-                            {item.index}
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                left: 0,
+                                top: '50%',
+                                transform: 'translate(-40%, -50%)',
+                                width: 20,
+                                height: 20,
+                                borderRadius: '50%',
+                                bgcolor: done ? 'success.main' : 'primary.main',
+                                color: done ? 'success.contrastText' : 'primary.contrastText',
+                                typography: 'caption',
+                                fontWeight: 800,
+                                fontSize: 10,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: (t) => `0 0 0 2px ${t.vars.palette.background.paper}`,
+                              }}
+                            >
+                              {item.index}
+                            </Box>
                           </Box>
-                        </Box>
-                      ))}
+                        );
+                      })}
                     </Box>
                   </Box>
                 ))}
@@ -230,47 +300,101 @@ export function ServiceTimeline({ recipes, serviceDate }: Props) {
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
                   Legenda (1 = mais cedo)
                 </Typography>
-                <Stack spacing={1}>
-                  {plan.items.map((item) => (
-                    <Stack
-                      key={`${item.recipeId}-${item.step.id}`}
-                      direction="row"
-                      spacing={1.25}
-                      alignItems="flex-start"
-                    >
-                      <Box
+                <Stack spacing={0.5}>
+                  {plan.items.map((item) => {
+                    const key = stepCompletionKey(item.recipeId, item.step.id);
+                    const done = completedSet.has(key);
+                    const saving = savingKey === key;
+                    return (
+                      <Stack
+                        key={key}
+                        direction="row"
+                        spacing={0.5}
+                        alignItems="flex-start"
                         sx={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          bgcolor: 'primary.main',
-                          color: 'primary.contrastText',
-                          typography: 'caption',
-                          fontWeight: 800,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
+                          py: 0.25,
+                          borderRadius: 1,
+                          opacity: done ? 0.72 : 1,
                         }}
                       >
-                        {item.index}
-                      </Box>
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="subtitle2">
-                          {item.step.process?.trim() || 'Sem nome'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {item.recipeTitle} · {item.laneName} ·{' '}
-                          {formatTimeBeforeService(item.start)} · {item.step.duration_minutes} min
-                        </Typography>
-                        {item.step.description ? (
-                          <Typography variant="caption" display="block" color="text.secondary">
-                            {item.step.description}
-                          </Typography>
-                        ) : null}
-                      </Box>
-                    </Stack>
-                  ))}
+                        {saving ? (
+                          <Box
+                            sx={{
+                              width: 42,
+                              height: 42,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
+                          >
+                            <CircularProgress size={16} />
+                          </Box>
+                        ) : (
+                          <FormControlLabel
+                            sx={{ alignItems: 'flex-start', mr: 0, ml: 0 }}
+                            control={
+                              <Checkbox
+                                size="small"
+                                checked={done}
+                                onChange={(event) =>
+                                  void handleToggle(key, event.target.checked)
+                                }
+                                inputProps={{
+                                  'aria-label': `Concluir ${item.step.process}`,
+                                }}
+                              />
+                            }
+                            label={
+                              <Box sx={{ minWidth: 0, pt: 0.75 }}>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <Box
+                                    sx={{
+                                      width: 22,
+                                      height: 22,
+                                      borderRadius: '50%',
+                                      bgcolor: done ? 'success.main' : 'primary.main',
+                                      color: done
+                                        ? 'success.contrastText'
+                                        : 'primary.contrastText',
+                                      typography: 'caption',
+                                      fontWeight: 800,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    {item.index}
+                                  </Box>
+                                  <Typography
+                                    variant="subtitle2"
+                                    sx={{ textDecoration: done ? 'line-through' : 'none' }}
+                                  >
+                                    {item.step.process?.trim() || 'Sem nome'}
+                                  </Typography>
+                                </Stack>
+                                <Typography variant="caption" color="text.secondary">
+                                  {item.recipeTitle} · {item.laneName} ·{' '}
+                                  {formatTimeBeforeService(item.start)} ·{' '}
+                                  {item.step.duration_minutes} min
+                                </Typography>
+                                {item.step.description ? (
+                                  <Typography
+                                    variant="caption"
+                                    display="block"
+                                    color="text.secondary"
+                                  >
+                                    {item.step.description}
+                                  </Typography>
+                                ) : null}
+                              </Box>
+                            }
+                          />
+                        )}
+                      </Stack>
+                    );
+                  })}
                 </Stack>
               </Box>
             </>

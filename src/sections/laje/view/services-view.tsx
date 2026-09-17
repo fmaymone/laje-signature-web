@@ -23,7 +23,7 @@ import { RouterLink } from 'src/routes/components';
 
 import { fDateTime } from 'src/utils/format-time';
 
-import { deleteServiceRecord, useGetServiceRecords } from 'src/actions/service-records';
+import { deleteServiceRecord, duplicateServiceRecord, useGetServiceRecords } from 'src/actions/service-records';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { toast } from 'src/components/snackbar';
@@ -41,6 +41,7 @@ export function LajeServicesView() {
 
   const [pendingDelete, setPendingDelete] = useState<ServiceRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const handleConfirmDelete = useCallback(async () => {
     if (!pendingDelete) return;
@@ -62,6 +63,29 @@ export function LajeServicesView() {
       setDeleting(false);
     }
   }, [mutateServices, pendingDelete]);
+
+  const handleDuplicate = useCallback(
+    async (item: ServiceRecord) => {
+      setDuplicatingId(item.id);
+      try {
+        const copied = await duplicateServiceRecord(item.id);
+        toast.success('Serviço duplicado');
+        await mutateServices();
+        router.push(paths.dashboard.service(copied.id));
+      } catch (err) {
+        const message =
+          typeof err === 'string'
+            ? err
+            : err && typeof err === 'object' && 'detail' in err
+              ? String((err as { detail: unknown }).detail)
+              : 'Falha ao duplicar serviço';
+        toast.error(message);
+      } finally {
+        setDuplicatingId(null);
+      }
+    },
+    [mutateServices, router]
+  );
 
   return (
     <DashboardContent>
@@ -127,7 +151,7 @@ export function LajeServicesView() {
                   <TableCell>Nome</TableCell>
                   <TableCell width={180}>Data e hora</TableCell>
                   <TableCell width={100}>Receitas</TableCell>
-                  <TableCell align="right" width={120}>
+                  <TableCell align="right" width={168}>
                     Ações
                   </TableCell>
                 </TableRow>
@@ -146,6 +170,14 @@ export function LajeServicesView() {
                     <TableCell>{fDateTime(item.service_date)}</TableCell>
                     <TableCell>{item.recipe_ids?.length ?? 0}</TableCell>
                     <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                      <Tooltip title="Duplicar">
+                        <IconButton
+                          disabled={duplicatingId === item.id}
+                          onClick={() => void handleDuplicate(item)}
+                        >
+                          <Iconify icon="solar:copy-bold" />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title="Editar">
                         <IconButton component={RouterLink} href={paths.dashboard.service(item.id)}>
                           <Iconify icon="solar:pen-bold" />

@@ -21,6 +21,8 @@ import {
   leadStartDateTimeISO,
 } from '../service-aggregate';
 
+import { stepCompletionKey } from 'src/types/service-record';
+
 // ----------------------------------------------------------------------
 
 const LANE_GUTTER = 110;
@@ -54,6 +56,14 @@ export function ServiceTimelineSheet({ service, recipes }: Props) {
       items: map.get(id)!,
     }));
   }, [plan.items]);
+
+  const completedSet = useMemo(
+    () => new Set(service.completed_steps ?? []),
+    [service.completed_steps]
+  );
+  const doneCount = plan.items.filter((item) =>
+    completedSet.has(stepCompletionKey(item.recipeId, item.step.id))
+  ).length;
 
   const legendColumns = useMemo(() => {
     const mid = Math.ceil(plan.items.length / 2);
@@ -91,6 +101,9 @@ export function ServiceTimelineSheet({ service, recipes }: Props) {
             {leadStart ? ` · corrida desde ${fDateTime(leadStart)}` : ''}
             {' · '}
             {formatLeadSummary(plan.leadMinutes)}
+            {plan.items.length
+              ? ` · ${doneCount}/${plan.items.length} concluídos`
+              : ''}
           </Typography>
         </Box>
         <Typography variant="body2" sx={{ color: '#57534e', textAlign: 'right' }}>
@@ -178,7 +191,11 @@ export function ServiceTimelineSheet({ service, recipes }: Props) {
                     />
                   ))}
 
-                  {row.items.map((item) => (
+                  {row.items.map((item) => {
+                    const done = completedSet.has(
+                      stepCompletionKey(item.recipeId, item.step.id)
+                    );
+                    return (
                     <Box
                       key={`${item.recipeId}-${item.step.id}`}
                       sx={{
@@ -189,6 +206,7 @@ export function ServiceTimelineSheet({ service, recipes }: Props) {
                         transform: 'translateY(-50%)',
                         height: 10,
                         borderRadius: 0.5,
+                        opacity: done ? 0.45 : 1,
                         bgcolor: `${row.tone}33`,
                         border: `1px solid ${row.tone}`,
                         boxSizing: 'border-box',
@@ -217,7 +235,8 @@ export function ServiceTimelineSheet({ service, recipes }: Props) {
                         {item.index}
                       </Box>
                     </Box>
-                  ))}
+                    );
+                  })}
                 </Box>
               </Box>
             ))}
@@ -236,7 +255,7 @@ export function ServiceTimelineSheet({ service, recipes }: Props) {
               Legenda dos processos
             </Typography>
             <Typography sx={{ fontSize: 10, color: '#78716c' }}>
-              1 = processo mais cedo → último = mais perto do serviço
+              1 = processo mais cedo → último = mais perto do serviço · ☐ / ☑ neste serviço
             </Typography>
           </Stack>
 
@@ -253,12 +272,15 @@ export function ServiceTimelineSheet({ service, recipes }: Props) {
                 {column.map((item) => {
                   const rowTone =
                     recipeRows.find((r) => r.recipeId === item.recipeId)?.tone ?? TONES[0];
+                  const done = completedSet.has(
+                    stepCompletionKey(item.recipeId, item.step.id)
+                  );
                   return (
                     <Box
                       key={`${item.recipeId}-${item.step.id}`}
                       sx={{
                         display: 'grid',
-                        gridTemplateColumns: '22px 1fr',
+                        gridTemplateColumns: '14px 22px 1fr',
                         gap: 0.75,
                         alignItems: 'start',
                         py: 0.35,
@@ -266,6 +288,25 @@ export function ServiceTimelineSheet({ service, recipes }: Props) {
                         breakInside: 'avoid',
                       }}
                     >
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          mt: 0.45,
+                          border: '1.5px solid #44403c',
+                          borderRadius: 0.25,
+                          bgcolor: done ? '#44403c' : 'transparent',
+                          color: '#fff',
+                          fontSize: 9,
+                          fontWeight: 800,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          lineHeight: 1,
+                        }}
+                      >
+                        {done ? '✓' : ''}
+                      </Box>
                       <Box
                         sx={{
                           width: 20,
@@ -291,6 +332,7 @@ export function ServiceTimelineSheet({ service, recipes }: Props) {
                             lineHeight: 1.3,
                             color: '#1c1917',
                             wordBreak: 'break-word',
+                            textDecoration: done ? 'line-through' : 'none',
                           }}
                         >
                           {item.step.process?.trim() || 'Sem nome'}

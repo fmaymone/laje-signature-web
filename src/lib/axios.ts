@@ -84,6 +84,7 @@ export const endpoints = {
   services: {
     list: '/v1/services',
     detail: (id: string) => `/v1/services/${id}`,
+    duplicate: (id: string) => `/v1/services/${id}/duplicate`,
   },
   compose: {
     graphs: '/v1/compose/graphs',

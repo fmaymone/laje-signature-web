@@ -20,7 +20,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { useGetIngredients } from 'src/actions/ingredients';
 import { useGetKitchenLayouts } from 'src/actions/kitchen-layouts';
 import { useGetRecipeRecords } from 'src/actions/recipe-records';
-import { createServiceRecord, updateServiceRecord } from 'src/actions/service-records';
+import { createServiceRecord, duplicateServiceRecord, updateServiceRecord } from 'src/actions/service-records';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
@@ -89,15 +89,29 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
   const { layouts } = useGetKitchenLayouts();
   const [form, setForm] = useState<FormState>(() => toForm(service, [], []));
   const [saving, setSaving] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
 
   const ingredientsById = useMemo(
     () => new Map(ingredients.map((item) => [item.id, item])),
     [ingredients]
   );
 
+  const recipeIdsKey = (service?.recipe_ids ?? []).join(',');
+
   useEffect(() => {
     setForm(toForm(service, recipes, layouts));
-  }, [service, recipes, layouts]);
+    // completed_steps is toggled inline and must not wipe unsaved form fields.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    service?.id,
+    service?.name,
+    service?.notes,
+    service?.service_date,
+    service?.kitchen_layout_id,
+    recipeIdsKey,
+    recipes,
+    layouts,
+  ]);
 
   if (loading) {
     return (
@@ -139,6 +153,20 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
       toast.error(errorMessage(err));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDuplicate = async () => {
+    if (!service?.id) return;
+    setDuplicating(true);
+    try {
+      const copied = await duplicateServiceRecord(service.id);
+      toast.success('Serviço duplicado');
+      onSaved(copied);
+    } catch (err) {
+      toast.error(errorMessage(err));
+    } finally {
+      setDuplicating(false);
     }
   };
 
@@ -296,6 +324,24 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
       <Stack direction="row" justifyContent="flex-end" spacing={1.5} flexWrap="wrap" useFlexGap>
         {mode === 'edit' && service?.id ? (
           <Button
+            color="inherit"
+            variant="outlined"
+            size="large"
+            disabled={duplicating}
+            onClick={() => void handleDuplicate()}
+            startIcon={
+              duplicating ? (
+                <CircularProgress size={18} color="inherit" />
+              ) : (
+                <Iconify icon="solar:copy-bold" />
+              )
+            }
+          >
+            Duplicar
+          </Button>
+        ) : null}
+        {mode === 'edit' && service?.id ? (
+          <Button
             component={RouterLink}
             href={paths.dashboard.servicePrint(service.id)}
             color="inherit"
@@ -336,6 +382,13 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
           <ServiceTimeline
             recipes={form.recipes}
             serviceDate={fromDatetimeLocalValue(form.service_date_local)}
+            serviceId={mode === 'edit' ? service?.id : null}
+            completedSteps={service?.completed_steps ?? []}
+            onCompletedStepsChange={
+              mode === 'edit' && service?.id
+                ? (next) => updateServiceRecord(service.id, { completed_steps: next }).then(() => undefined)
+                : undefined
+            }
           />
         </>
       )}
