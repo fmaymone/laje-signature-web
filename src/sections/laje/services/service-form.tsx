@@ -36,6 +36,7 @@ import {
 import { ServiceShoppingList } from './service-shopping-list';
 import { ServiceTimeline } from './service-timeline';
 import { ServiceMiseFloor } from './service-mise-floor';
+import { ServiceRecipeColumns } from './service-recipe-columns';
 
 // ----------------------------------------------------------------------
 
@@ -355,6 +356,18 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
         {mode === 'edit' && service?.id ? (
           <Button
             component={RouterLink}
+            href={`${paths.dashboard.servicePrint(service.id)}?print=by-recipe`}
+            color="inherit"
+            variant="outlined"
+            size="large"
+            startIcon={<Iconify icon="solar:widget-5-bold" />}
+          >
+            Imprimir por receitas
+          </Button>
+        ) : null}
+        {mode === 'edit' && service?.id ? (
+          <Button
+            component={RouterLink}
             href={paths.dashboard.servicePrint(service.id)}
             color="inherit"
             variant="outlined"
@@ -395,6 +408,25 @@ export function ServiceForm({ mode, service, loading, onSaved }: Props) {
           <ServiceMiseFloor
             recipes={form.recipes}
             layout={layouts.find((item) => item.id === form.kitchen_layout_id) ?? null}
+          />
+          <ServiceRecipeColumns
+            recipes={form.recipes}
+            serviceDate={fromDatetimeLocalValue(form.service_date_local)}
+            serviceId={mode === 'edit' ? service?.id : null}
+            completedSteps={service?.completed_steps ?? []}
+            onCompletedStepsChange={
+              mode === 'edit' && service?.id
+                ? (next) =>
+                    updateServiceRecord(service.id, { completed_steps: next }).then(
+                      () => undefined
+                    )
+                : undefined
+            }
+            printHref={
+              mode === 'edit' && service?.id
+                ? `${paths.dashboard.servicePrint(service.id)}?print=by-recipe`
+                : null
+            }
           />
           <ServiceTimeline
             recipes={form.recipes}

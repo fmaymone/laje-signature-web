@@ -52,7 +52,8 @@
   body.recipe-print-mode-portrait,
   body.recipe-print-mode-landscape,
   body.recipe-print-mode-mise,
-  body.recipe-print-mode-shopping-missing {
+  body.recipe-print-mode-shopping-missing,
+  body.recipe-print-mode-by-recipe {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     background: #fff !important;
@@ -63,22 +64,27 @@
   body.recipe-print-mode-landscape .laje__layout__header,
   body.recipe-print-mode-mise .laje__layout__header,
   body.recipe-print-mode-shopping-missing .laje__layout__header,
+  body.recipe-print-mode-by-recipe .laje__layout__header,
   body.recipe-print-mode-portrait .laje__layout__nav__root,
   body.recipe-print-mode-landscape .laje__layout__nav__root,
   body.recipe-print-mode-mise .laje__layout__nav__root,
   body.recipe-print-mode-shopping-missing .laje__layout__nav__root,
+  body.recipe-print-mode-by-recipe .laje__layout__nav__root,
   body.recipe-print-mode-portrait .laje__layout__nav__vertical,
   body.recipe-print-mode-landscape .laje__layout__nav__vertical,
   body.recipe-print-mode-mise .laje__layout__nav__vertical,
   body.recipe-print-mode-shopping-missing .laje__layout__nav__vertical,
+  body.recipe-print-mode-by-recipe .laje__layout__nav__vertical,
   body.recipe-print-mode-portrait .laje__layout__nav__horizontal,
   body.recipe-print-mode-landscape .laje__layout__nav__horizontal,
   body.recipe-print-mode-mise .laje__layout__nav__horizontal,
   body.recipe-print-mode-shopping-missing .laje__layout__nav__horizontal,
+  body.recipe-print-mode-by-recipe .laje__layout__nav__horizontal,
   body.recipe-print-mode-portrait .laje__layout__nav__mobile,
   body.recipe-print-mode-landscape .laje__layout__nav__mobile,
   body.recipe-print-mode-mise .laje__layout__nav__mobile,
   body.recipe-print-mode-shopping-missing .laje__layout__nav__mobile,
+  body.recipe-print-mode-by-recipe .laje__layout__nav__mobile,
   .recipe-print-toolbar,
   .recipe-print-sheet-label,
   .no-print {
@@ -88,14 +94,16 @@
   body.recipe-print-mode-portrait .recipe-print-preview,
   body.recipe-print-mode-landscape .recipe-print-preview,
   body.recipe-print-mode-mise .recipe-print-preview,
-  body.recipe-print-mode-shopping-missing .recipe-print-preview {
+  body.recipe-print-mode-shopping-missing .recipe-print-preview,
+  body.recipe-print-mode-by-recipe .recipe-print-preview {
     gap: 0 !important;
   }
 
   body.recipe-print-mode-portrait .recipe-print-sheet,
   body.recipe-print-mode-landscape .recipe-print-sheet,
   body.recipe-print-mode-mise .recipe-print-sheet,
-  body.recipe-print-mode-shopping-missing .recipe-print-sheet {
+  body.recipe-print-mode-shopping-missing .recipe-print-sheet,
+  body.recipe-print-mode-by-recipe .recipe-print-sheet {
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
@@ -110,14 +118,17 @@
   body.recipe-print-mode-portrait .recipe-print-sheet--a4-landscape,
   body.recipe-print-mode-portrait .recipe-print-sheet--mise,
   body.recipe-print-mode-portrait .recipe-print-sheet--shopping-missing,
+  body.recipe-print-mode-portrait .recipe-print-sheet--by-recipe,
   body.recipe-print-mode-landscape .recipe-print-sheet--a4-portrait,
   body.recipe-print-mode-mise .recipe-print-sheet--a4-landscape,
   body.recipe-print-mode-mise .recipe-print-sheet--a4-portrait:not(.recipe-print-sheet--mise),
-  body.recipe-print-mode-shopping-missing .recipe-print-sheet:not(.recipe-print-sheet--shopping-missing) {
+  body.recipe-print-mode-shopping-missing .recipe-print-sheet:not(.recipe-print-sheet--shopping-missing),
+  body.recipe-print-mode-by-recipe .recipe-print-sheet:not(.recipe-print-sheet--by-recipe) {
     display: none !important;
   }
 
-  body.recipe-print-mode-mise .recipe-print-sheet--mise + .recipe-print-sheet--mise {
+  body.recipe-print-mode-mise .recipe-print-sheet--mise + .recipe-print-sheet--mise,
+  body.recipe-print-mode-by-recipe .recipe-print-sheet--by-recipe + .recipe-print-sheet--by-recipe {
     page-break-before: always;
     break-before: page;
   }
@@ -126,10 +137,12 @@
   body.recipe-print-mode-landscape .laje__layout__main,
   body.recipe-print-mode-mise .laje__layout__main,
   body.recipe-print-mode-shopping-missing .laje__layout__main,
+  body.recipe-print-mode-by-recipe .laje__layout__main,
   body.recipe-print-mode-portrait .laje__layout__main__content,
   body.recipe-print-mode-landscape .laje__layout__main__content,
   body.recipe-print-mode-mise .laje__layout__main__content,
-  body.recipe-print-mode-shopping-missing .laje__layout__main__content {
+  body.recipe-print-mode-shopping-missing .laje__layout__main__content,
+  body.recipe-print-mode-by-recipe .laje__layout__main__content {
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;

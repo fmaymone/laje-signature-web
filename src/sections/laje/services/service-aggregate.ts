@@ -230,6 +230,46 @@ export function aggregateServiceTimeline(recipes: RecipeRecord[]): ServiceTimeli
   };
 }
 
+export type RecipeTimelineColumn = {
+  recipeId: string;
+  recipeTitle: string;
+  items: ServiceTimelineItem[];
+};
+
+/** Colunas na ordem das receitas do serviço; processos do mais cedo (topo) ao serviço. */
+export function groupTimelineByRecipe(
+  recipes: RecipeRecord[],
+  items: ServiceTimelineItem[]
+): RecipeTimelineColumn[] {
+  const byId = new Map<string, ServiceTimelineItem[]>();
+  for (const item of items) {
+    const bucket = byId.get(item.recipeId) ?? [];
+    bucket.push(item);
+    byId.set(item.recipeId, bucket);
+  }
+
+  return recipes.map((recipe) => ({
+    recipeId: recipe.id,
+    recipeTitle: recipe.title,
+    items: (byId.get(recipe.id) ?? []).slice().sort((a, b) => {
+      if (b.start !== a.start) return b.start - a.start;
+      if (b.end !== a.end) return b.end - a.end;
+      return a.step.process.localeCompare(b.step.process, 'pt-BR');
+    }),
+  }));
+}
+
+export function chunkRecipeColumns<T>(columns: T[]): T[][] {
+  const n = columns.length;
+  if (n === 0) return [[]];
+  const size = n <= 3 ? n : n === 4 ? 2 : 3;
+  const pages: T[][] = [];
+  for (let i = 0; i < n; i += size) {
+    pages.push(columns.slice(i, i + size));
+  }
+  return pages;
+}
+
 export function formatLeadSummary(minutes: number): string {
   if (!minutes || minutes <= 0) return 'Sem antecedência (tudo no serviço)';
   const days = Math.floor(minutes / (24 * 60));

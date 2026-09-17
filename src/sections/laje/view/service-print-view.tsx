@@ -26,6 +26,7 @@ import { printRecipeSheet } from '../recipes/print/print-sheet';
 import { ServiceShoppingSheet } from '../services/print/service-shopping-sheet';
 import { ServiceTimelineSheet } from '../services/print/service-timeline-sheet';
 import { ServiceMiseSheets } from '../services/print/service-mise-sheet';
+import { ServiceRecipeColumnsSheets } from '../services/print/service-recipe-columns-sheet';
 
 import '../recipes/print/recipe-print.css';
 
@@ -66,9 +67,13 @@ export function LajeServicePrintView() {
 
   useEffect(() => {
     if (autoPrinted.current) return undefined;
-    if (loading || !service || searchParams.get('print') !== 'missing') return undefined;
+    if (loading || !service) return undefined;
+    const mode = searchParams.get('print');
+    const printMode =
+      mode === 'missing' ? 'shopping-missing' : mode === 'by-recipe' ? 'by-recipe' : null;
+    if (!printMode) return undefined;
     autoPrinted.current = true;
-    const timer = window.setTimeout(() => printRecipeSheet('shopping-missing'), 400);
+    const timer = window.setTimeout(() => printRecipeSheet(printMode), 400);
     return () => window.clearTimeout(timer);
   }, [loading, searchParams, service]);
 
@@ -146,6 +151,14 @@ export function LajeServicePrintView() {
               <Button
                 variant="contained"
                 color="inherit"
+                startIcon={<Iconify icon="solar:widget-5-bold" />}
+                onClick={() => printRecipeSheet('by-recipe')}
+              >
+                Imprimir por receitas (A4)
+              </Button>
+              <Button
+                variant="contained"
+                color="inherit"
                 startIcon={<Iconify icon="solar:chef-hat-bold" />}
                 onClick={() => printRecipeSheet('mise')}
               >
@@ -159,7 +172,7 @@ export function LajeServicePrintView() {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="body2" color="text.secondary">
-              Quatro conjuntos: lista completa, só o que está faltando, timeline (paisagem) e
+              Lista completa, só o que falta, timeline (paisagem), por receitas (retrato) e
               uma ficha por bancada. Na caixa de impressão, confirme a orientação conforme o
               botão.
             </Typography>
@@ -197,6 +210,13 @@ export function LajeServicePrintView() {
           </Typography>
         </Box>
         <ServiceTimelineSheet service={service} recipes={selectedRecipes} />
+
+        <Box className="recipe-print-sheet-label no-print" sx={{ mt: 2 }}>
+          <Typography variant="caption" color="text.secondary">
+            Folha 3 · Por receitas (A4 retrato)
+          </Typography>
+        </Box>
+        <ServiceRecipeColumnsSheets service={service} recipes={selectedRecipes} />
 
         <Box className="recipe-print-sheet-label no-print" sx={{ mt: 2 }}>
           <Typography variant="caption" color="text.secondary">
